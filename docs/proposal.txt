@@ -1,0 +1,34 @@
+# Basic Info
+Matthew Territo<br/>territo@cs.utah.edu<br/>u1076954<br/>https://github.com/wundahful/dataviscourse-exoplanet-explorer
+
+# Background and Motivation
+My research group is The OpenSpace project (openspaceproject.com). We're building an open source planetary & cosmological visualization platform. The primary intention is for use in planetarium shows, public outreach, and in the classroom. NASA and space research institutions are also involved and are also interested in adding another tool to their pipelines, especially for studying solar weather.
+  
+While others are beginning work on information visualization for solar dynamics research purposes,  my goal is to focus more on the outreach side. I'm primarily interested in improving communication of complex science (especially visually), and I think exoplanet discovery is one of the more tangible and inspiring research themes that can be shared. Ideally, the project will involve an web based exoplanet explorer which can function as a stand-alone application as well as interactively updating as you navigate within the OpenSpace package.
+
+# Project Objectives
+
+# Data
+Data will come from the NASA Exoplanet Archive hosted by CalTech. I plan to mostly use the confirmed planet database, but may need to integrate additional sources.
+http://exoplanetarchive.ipac.caltech.edu/
+http://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=planets
+
+# Data Processing
+I intend to show habitable zones, size compared to Earth, and class/size of star. The data seems relatively clean for the confirmed planets, and most data are presented in units relative to the Earth and Sun, so it shouldn't require much processing. There's also an API available, which should accessing updated data very simple.
+
+# Visualization Design
+
+# Must-Have Features
+- Planet size relative to Earth or Jupiter (depending on order of magnitude)
+- Type & size of star it's orbiting
+- Calculation & display of Habitable Zone in a planet's system vs. Earth & Sun's
+- Animated orbits compared against Earth's orbit
+- Distance from our solar system
+
+# Optional Features
+- Scale showing multiple planets (selected or filtered based on currently selected planet) distance to the solar system
+- Display of multiple planets in same star system (if applicable)
+- Display of locations using galactic coordinates
+- Connection to OpenSpace software's camera frustum
+
+# Project Schedule
