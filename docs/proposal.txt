@@ -26,6 +26,23 @@ http://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls
 The data seems relatively clean for the confirmed planets, and most data are presented in units relative to the Earth and Sun, so it shouldn't require much processing. There's also an API available, which should make accessing updated data very simple. The biggest processing to be done will likely be calculating habitable zones based on star types. There might also be some not-insignificant work to process the light curve/transit data.
 
 # Visualization Design
+### Design 1: Heads-Up Display
+The Heads-Up Display presents mainly blown-up views. We use animated location to encode the orbit's distance and velocity. In a separate panel, we also use area to encode size, and feature direct data to show information about selection. There's an overall galactic map to display distance and give context, but
+
+It is able to encode quite a bit of information about each individual planet effectively, but provides less analysis of the overall picture. It also relies somewhat on displaying direct data instead of an encoding.
+
+### Design 2: Analytics Console
+The Analytics Console would be magic-window style implementation. It begins with an overview bar chart of the number of habitable planets within distance bins. As you select areas of the galactic map via a window (connected to OpenSpace), the, encoding can change to show a detail view. The example presented is a scatter plot of Distance to the Sun vs. "Most Earthlike," and ordinal metric that would need to be curated. Other views would be possible to break out more. Tooltips can present even finer detail on an individual datum.
+
+This view presents information in a very explorable manner, with access to many levels of information. Despite this, the clinical nature of the presentation has the potential to stymie engagement if the styling isn't well considered.
+
+### Design 3: Vitruvian Planet
+The Vitruvian Planet design is meant to show how the values cluster around an ideal planet i.e. the Earth. It would be a scatterplot presentation with Earth at the center of interactive axes. The data could be changed to compare gravity against distance to the sun, or temperature vs. size, easily showing how they directly compare to Earth. The color and size channels of the marks could also be used to encode different information from chart to chart, but more likely would show size and temperature across all other values.
+
+This presentation has a more compelling encoding & interactivity than the Analytics Console, and a more analytical approach than the Heads-Up Display. However, it may try to encode too much information in too small of a space, and the scaling may become a factor, especially since we're dealing with Very Large Numbers™.
+
+### Design 4: Composite
+The composite design takes the Vitruvian Planet and integrates it into the Heads Up Display. Design 1 is lacking in overall view and Design 3 is perhaps too direct. I feel that combining them elevates both concepts. The combination provides the more playful multimedia experience I'm trying to obtain while also introducing a deeper, meaningful level of analytics.
 
 # Must-Have Features
 - Planet size relative to Earth or Jupiter (depending on order of magnitude)
@@ -34,8 +51,8 @@ The data seems relatively clean for the confirmed planets, and most data are pre
 - Length of day
 - Animated orbits compared against Earth's orbit
 - Display of Habitable Zone in a planet's system vs. Earth & Sun's
-- Viz of all exoplanet distances to our solar system
-- Some collection or list of exoplanets from which to select & filter
+- Map/viz of all exoplanet distances to our solar system
+- "Vitruvian" scatterplot against Earth
 
 # Optional Features
 - Simplified and understandable representation of the light curve measurement for each planet
