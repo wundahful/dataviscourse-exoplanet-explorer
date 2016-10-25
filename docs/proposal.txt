@@ -1,12 +1,21 @@
 # Basic Info
-Matthew Territo<br/>territo@cs.utah.edu<br/>u1076954<br/>https://github.com/wundahful/dataviscourse-exoplanet-explorer
+### OpenSpace Exoplanet Explorer  
+##### Matthew Territo  
+u1076954  
+territo@cs.utah.edu  
+https://github.com/wundahful/dataviscourse-exoplanet-explorer
 
 # Background and Motivation
-My research group is The OpenSpace project (openspaceproject.com). We're building an open source planetary & cosmological visualization platform. The primary intention is for use in planetarium shows, public outreach, and in the classroom. NASA and space research institutions are also involved and are also interested in adding another tool to their pipelines, especially for studying solar weather.
+My research group is The OpenSpace project (openspaceproject.com). We're building an open source planetary & cosmological visualization platform. The primary application is for use in planetarium shows, public outreach, and in the classroom. NASA and space research institutions are also involved to guide its development toward becoming a useful research tool as well, especially for studying solar weather.
   
-While others are beginning work on information visualization for solar dynamics research purposes,  my goal is to focus more on the outreach side. I'm primarily interested in improving communication of complex science (especially visually), and I think exoplanet discovery is one of the more tangible and inspiring research themes that can be shared. Ideally, the project will involve an web based exoplanet explorer which can function as a stand-alone application as well as interactively updating as you navigate within the OpenSpace package.
+While others are beginning work on information visualization for solar dynamics research, my goal is to focus more on the outreach side. I'm primarily interested in improving communication of complex science (especially visually), and I think exoplanet discovery is one of the more tangible and inspiring research themes that can be shared.
 
 # Project Objectives
+I intend present the exoplanets that have been confirmed by the Kepler mission data (https://kepler.nasa.gov/index.cfm). There are actually a few missions involved, but Kepler is the most recognizable. By showing relatable information, I’d like to inspire discovery of the universe and space exploration.
+
+This project will involve a web based exoplanet explorer which can function as a stand-alone application. Eventually, it will integrate with the OpenSpace package to interactively update along with navigation inside OpenSpace.
+
+My proposal is to showcase these planets in relation to our solar system and Earth: how far away they are, how their orbits, mass, & day lengths compare to Earth’s, and if they’re possibly habitable. Furthermore, I’d compare similar metrics for their star vs. the Sun. A final goal might be to do some more traditional information visualization over the entire dataset to analyze exoplanet statistics. However, it’s more important to me create an exploration portal that shows relationships to Earth rather than to provide a technical measurement and analysis tool.
 
 # Data
 Data will come from the NASA Exoplanet Archive hosted by CalTech. I plan to mostly use the confirmed planet database, but may need to integrate additional sources.
@@ -14,21 +23,26 @@ http://exoplanetarchive.ipac.caltech.edu/
 http://exoplanetarchive.ipac.caltech.edu/cgi-bin/TblView/nph-tblView?app=ExoTbls&config=planets
 
 # Data Processing
-I intend to show habitable zones, size compared to Earth, and class/size of star. The data seems relatively clean for the confirmed planets, and most data are presented in units relative to the Earth and Sun, so it shouldn't require much processing. There's also an API available, which should accessing updated data very simple.
+The data seems relatively clean for the confirmed planets, and most data are presented in units relative to the Earth and Sun, so it shouldn't require much processing. There's also an API available, which should make accessing updated data very simple. The biggest processing to be done will likely be calculating habitable zones based on star types. There might also be some not-insignificant work to process the light curve/transit data.
 
 # Visualization Design
+My original intent is a heads-up-display style console. 
 
 # Must-Have Features
 - Planet size relative to Earth or Jupiter (depending on order of magnitude)
 - Type & size of star it's orbiting
-- Calculation & display of Habitable Zone in a planet's system vs. Earth & Sun's
-- Animated orbits compared against Earth's orbit
 - Distance from our solar system
+- Length of day
+- Animated orbits compared against Earth's orbit
+- Display of Habitable Zone in a planet's system vs. Earth & Sun's
+- Viz of all exoplanet distances to our solar system
+- Some collection or list of exoplanets from which to select & filter
 
 # Optional Features
-- Scale showing multiple planets (selected or filtered based on currently selected planet) distance to the solar system
-- Display of multiple planets in same star system (if applicable)
-- Display of locations using galactic coordinates
-- Connection to OpenSpace software's camera frustum
+- Simplified and understandable representation of the light curve measurement for each planet
+- Display/animate and entire star system with multiple planets when applicable
+- Comparison/selection of multiple planets across systems
+- Plot locations using galactic coordinates
+- Filtering connected to OpenSpace software's camera frustum
 
 # Project Schedule
