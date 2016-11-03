@@ -36,8 +36,8 @@
       <file leaf-file-name="main.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/js/main.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="828">
-              <caret line="239" column="8" selection-start-line="239" selection-start-column="8" selection-end-line="239" selection-end-column="8" />
+            <state relative-caret-position="738">
+              <caret line="243" column="17" selection-start-line="243" selection-start-column="17" selection-end-line="243" selection-end-column="17" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -73,9 +73,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="960" />
     <option name="y" value="22" />
-    <option name="width" value="960" />
+    <option name="width" value="1920" />
     <option name="height" value="1173" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
@@ -114,7 +113,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="js-jscs-nodeInterpreter" value="/usr/local/bin/node" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../cs6630/hw4" />
   </component>
   <component name="RunManager">
     <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
@@ -182,15 +181,15 @@
       <option name="presentableId" value="Default" />
       <updated>1477958695034</updated>
       <workItem from="1477958696295" duration="7834000" />
-      <workItem from="1478021565033" duration="6707000" />
+      <workItem from="1478021565033" duration="8379000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="14541000" />
+    <option name="totallyTimeSpent" value="16213000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="960" y="22" width="960" height="1173" extended-state="0" />
+    <frame x="0" y="22" width="1920" height="1173" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24920128" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -273,8 +272,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/main.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="828">
-          <caret line="239" column="8" selection-start-line="239" selection-start-column="8" selection-end-line="239" selection-end-column="8" />
+        <state relative-caret-position="738">
+          <caret line="243" column="17" selection-start-line="243" selection-start-column="17" selection-end-line="243" selection-end-column="17" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>

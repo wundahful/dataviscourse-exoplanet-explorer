@@ -205,8 +205,21 @@ function initAll(planetData) {
 }
 
 function main(error, data) {
+    data = convertDataFormats(data);
     initAll(data);
-    console.log(data.filter(function (d) { return d[] !== null ;} ));
+    console.log(data.filter(function (d) { return d !== null ;} ));
+}
+
+function convertDataFormats (data) {
+    for (var i =0; i < data.length; i++) {
+        data[i][PLANET_RADIUS_EARTH] = +data[i][PLANET_RADIUS_EARTH];
+        data[i][PLANET_MASS_EARTH] = +data[i][PLANET_MASS_EARTH];
+        data[i][PLANET_RADIUS_JUPITER] = +data[i][PLANET_RADIUS_JUPITER];
+        data[i][PLANET_MASS_JUPITER] = +data[i][PLANET_MASS_JUPITER];
+        data[i][PLANET_YEAR_LENGTH] = +data[i][PLANET_YEAR_LENGTH];
+        data[i][STAR_RADIUS] = +data[i][STAR_RADIUS];
+    }
+    return data
 }
 
 /*
