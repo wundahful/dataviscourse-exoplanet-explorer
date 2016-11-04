@@ -48,7 +48,7 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
 /*
  * Style Variables
  */
-var POINT_RAD = 10;
+var POINT_RAD = 5;
 
 /**
  * Formats key string
@@ -129,23 +129,92 @@ function drawOrbit(planet) {
         .attr('stroke', 'black')
         .attr('stroke-width', 2);
 
+    transitionOrbit(planet);
+
     return orbit;
+}
+
+function transitionOrbit(planet) {
+    var T_YEAR = 7000;
+    planet.transition()
+        .duration(T_YEAR)
+        .ease(d3.easeLinear)
+        .attrTween('transform', orbitTransform())
+        //.each('end', transitionOrbit(planet));
+}
+
+function orbitTransform() {
+    return function(d, i, a) {
+        return function (t) {
+            return 'translate(' + (250 + 50 * Math.cos(t))+ ', ' + (250 + 50 * Math.sin(t)) + ')';
+        }
+    }
 }
 function initOrbital(planetData) {
     /**
      * Get the canvas
      */
     var planetOrbits = d3.select(ID(ID_ORBITAL));
-    console.log(planetData);
+
     var width = planetOrbits.attr('width'),
         height = planetOrbits.attr('height');
 
-    var sun     = planetOrbits.append('circle'),
-        earth   = planetOrbits.append('circle'),
-        exo     = planetOrbits.append('circle'),
-        star    = planetOrbits.append('circle');
+    planetOrbits.datum(planetData);
 
-    drawOrbit(exo);
+    var hud = {
+        'sun' : planetOrbits.append('circle'),
+        'exo': planetOrbits.append('circle'),
+        'earth': planetOrbits.append('circle'),
+        'star': planetOrbits.append('circle')
+    };
+
+    var SUN_RAD = 50;
+    var EARTH_RAD = 20;
+    var ELL_ORB_RAD = 275;
+    var VERT_CENT = 450;
+    var ECC_EARTH = 0.0167;
+
+
+    hud['sun']
+        .attr('transform', 'translate(300, '+ VERT_CENT + ')')
+        .attr('r', SUN_RAD)
+        .attr('fill', 'yellow');
+
+    hud['star']
+        .attr('transform', 'translate(900, '+ VERT_CENT + ')')
+        .attr('r', function (d) { return SUN_RAD * d[STAR_RADIUS]})
+        .attr('fill', 'red');
+
+    hud['earth']
+        .attr('transform', 'translate(300, '+ (VERT_CENT + ELL_ORB_RAD) + ')')
+        .attr('r', EARTH_RAD)
+        .attr('fill', 'steelblue');
+
+    hud['exo']
+        .attr('transform', 'translate(900, '+ (VERT_CENT + ELL_ORB_RAD) + ')')
+        .attr('r', function (d) { return EARTH_RAD * d[PLANET_RADIUS_EARTH]})
+        .attr('fill', 'darkgray');
+
+    //Orbit
+    // EARTH ORBIT
+    planetOrbits.append('ellipse')
+        .attr('transform', 'translate(300, 450)')
+        .attr('ry', ELL_ORB_RAD)
+        .attr('rx', ELL_ORB_RAD * Math.sqrt(1-ECC_EARTH))
+        .attr('stroke', 'lightgray')
+        .attr('fill', 'none')
+        .attr('stroke-width', 2);
+
+    // EXO ORBIT
+    planetOrbits.append('ellipse')
+        .attr('transform', 'translate(900, 450)')
+        .attr('ry', ELL_ORB_RAD)
+        .attr('rx', function (d) {return ELL_ORB_RAD * Math.sqrt(1-d['pl_orbeccen'])})
+        .attr('stroke', 'lightgray')
+        .attr('fill', 'none')
+        .attr('stroke-width', 2);
+
+    //drawOrbit(hud['exo']);
 
 }
 function initChart(planetData) {
@@ -200,7 +269,7 @@ function initChart(planetData) {
 }
 
 function initAll(planetData) {
-    initOrbital(planetData[0]);
+    initOrbital(planetData[200  ]);
     initChart(planetData);
 }
 
@@ -218,6 +287,7 @@ function convertDataFormats (data) {
         data[i][PLANET_MASS_JUPITER] = +data[i][PLANET_MASS_JUPITER];
         data[i][PLANET_YEAR_LENGTH] = +data[i][PLANET_YEAR_LENGTH];
         data[i][STAR_RADIUS] = +data[i][STAR_RADIUS];
+        data[i]['pl_orbeccen'] = +data[i]['pl_orbeccen'];
     }
     return data
 }
