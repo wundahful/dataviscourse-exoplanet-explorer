@@ -159,6 +159,7 @@ function initOrbital(planetData) {
     var width = planetOrbits.attr('width'),
         height = planetOrbits.attr('height');
 
+    planetOrbits.selectAll("*").remove();
     planetOrbits.datum(planetData);
 
     var hud = {
@@ -264,12 +265,12 @@ function initChart(planetData) {
         .attr('cy', function (d, i) { return planetCountScale(i); } )
         .attr('cx', function (d) { return jupiterRadiusScale(d[PLANET_RADIUS_JUPITER]);} );
 
-    points.on('click', function (d) { debugClick(d); });
+    points.on('click', function (d) { initOrbital(planetData[d['rowid']]); debugClick(d); });
 
 }
 
 function initAll(planetData) {
-    initOrbital(planetData[200  ]);
+    initOrbital(planetData[2347]);
     initChart(planetData);
 }
 
