@@ -34,7 +34,7 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     STAR_COLOR_COUNT = 'st_colorn',
     ORBIT_RAD_MAX = 'pl_orbsmax',
     ORBIT_ECCENTRICITY = 'pl_orbeccen',
-    ROWID = 'rowid'.
+    ROWID = 'rowid',
     st_umbj ='st_umbj',
     st_bmvj ='st_bmvj',
     st_vjmic='st_vjmic',
@@ -270,11 +270,11 @@ function initChart(planetData) {
         .attr('fill', 'steelblue')
         .attr('stroke', 'white')
         .merge(points)
-        .attr('stroke-width', function (d) { return 1 + d[PLANET_RADIUS_EARTH]/20; })
-        .attr('r', function (d) { return POINT_RAD ; })
+        .attr('stroke-width', function (d) { return 1 + d[PLANET_RADIUS_EARTH]/10; })
+        .attr('r', function (d) { return POINT_RAD + d[PLANET_RADIUS_EARTH]/7; })
         //.attr('r', function (d) { return POINT_RAD + d[PLANET_RADIUS_EARTH] ; })
-        //.attr('cy', function (d, i) { return planetCountScale(i); } )
-        .attr('cy', function (d) { return orbitRadiusScale(d[ORBIT_RAD_MAX]); } )
+        .attr('cy', function (d, i) { return planetCountScale(i); } )
+        //.attr('cy', function (d) { return orbitRadiusScale(d[ORBIT_RAD_MAX]); } )
         .attr('cx', function (d) { return earthRadiusScale(d[PLANET_RADIUS_EARTH]);} );
 
     points.on('click', function (d) { debugClick(d); initOrbital(d); });
@@ -325,15 +325,15 @@ function convertDataFormats (data) {
         ORBIT_RAD_MAX,
         ORBIT_ECCENTRICITY,
         ROWID,
-        st_umbj ,
-        st_bmvj ,
+        st_umbj,
+        st_bmvj,
         st_vjmic,
         st_vjmrc,
-        st_jmh2 ,
-        st_hmk2 ,
-        st_jmk2 ,
-        st_bmy  ,
-        st_m1   ,
+        st_jmh2,
+        st_hmk2,
+        st_jmk2,
+        st_bmy,
+        st_m1,
         st_c1,
         st_teff
     ];
