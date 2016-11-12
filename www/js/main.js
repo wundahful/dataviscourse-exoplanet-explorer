@@ -300,6 +300,19 @@ function initChart(planetData) {
         .attr('height', height)
         .style('fill', 'url(' + ID(ID_BG_GRADIENT) + ')');
 
+    /** Create axis */
+    planetChart.append('path')
+        .attr('stroke', 'lightgray')
+        .attr('stroke-width', 2)
+        .attr('fill', 'none')
+        .attr('d',
+            'M 0 ' + height/2 +
+            'H ' + width +
+            'M  ' + width/2 + ' 0' +
+            'V ' + height +
+            'Z'
+        );
+
 
     /** Selection boxes */
     var selectX = d3.select(ID(ID_PLANET_CHART_X)),
