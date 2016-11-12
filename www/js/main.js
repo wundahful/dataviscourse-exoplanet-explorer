@@ -37,6 +37,8 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     STAR_RADIUS = 'st_rad',
     STAR_CLASS = 'st_spstr',
     STAR_COLOR_COUNT = 'st_colorn',
+    STAR_TEMP = 'st_teff',
+    STAR_MASS = 'st_mass',
     ORBIT_RAD_MAX = 'pl_orbsmax',
     ORBIT_ECCENTRICITY = 'pl_orbeccen',
     ROWID = 'rowid',
@@ -54,6 +56,7 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
 
 /** Astronomical Constants */
     var SUN_RADIUS = 695700,
+    SUN_TEMP = 5800,
     AU = SUN_RADIUS / 0.00465047,
     KM_AU = 149597871,
     EARTH_RADIUS =  6353,
@@ -234,6 +237,94 @@ function initOrbital(planetData) {
     //drawOrbit(hud['exo']);
 
 }
+
+function loadScales(planetData, width, height) {
+
+    var width3Range = [POINT_RAD, width/2, width - POINT_RAD],
+        height3Range = [height - POINT_RAD, height/2, POINT_RAD],
+        width2Range = [POINT_RAD, width - POINT_RAD],
+        height2Range = [height - POINT_RAD, POINT_RAD];
+
+    /** Earth Radius */
+    var e = d3.extent(planetData, function (d) {return d[PLANET_RADIUS_EARTH]; });
+    var earthRadiusX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
+    var earthRadiusY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
+
+    /** Earth Mass */
+    e = d3.extent(planetData, function (d) {return d[PLANET_MASS_EARTH]; } );
+    var earthMassX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
+    var earthMassY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
+
+    /** Jupiter Radius */
+    e = d3.extent(planetData, function (d) {return d[PLANET_RADIUS_JUPITER]; });
+    var jupiterRadiusX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
+    var jupiterRadiusY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
+
+    /** Jupiter Mass */
+    e = d3.extent(planetData, function (d) {return d[PLANET_MASS_JUPITER]; } );
+    var jupiterMassX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
+    var jupiterMassY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
+
+    /** Star Mass */
+    e = d3.extent(planetData, function (d) {return d[STAR_MASS]; } );
+    var starMassX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
+    var starMassY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
+
+    /** Star Radius */
+    e = d3.extent(planetData, function (d) {return d[STAR_RADIUS]; } );
+    var starRadiusX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
+    var starRadiusY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
+
+    /** Star Temperature */
+    e = d3.extent(planetData, function (d) {return d[STAR_TEMP]; } );
+    var starTempX = d3.scaleLinear().domain([e[0], SUN_TEMP, e[1]]).range(width3Range);
+    var starTempY = d3.scaleLinear().domain([e[0], SUN_TEMP, e[1]]).range(height3Range);
+
+    /** Orbit Radius */
+    e = d3.extent(planetData, function (d) { return d[ORBIT_RAD_MAX] ; } );
+    var orbitRadiusX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
+    var orbitRadiusY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
+
+    /** Orbit Eccentricity */
+    e = d3.extent(planetData, function (d) {return d[ORBIT_ECCENTRICITY]; } );
+    var eccScaleX = d3.scaleLinear().domain([e[0], EARTH_ECC, e[1]]).range(width3Range);
+    var eccScaleY = d3.scaleLinear().domain([e[0], EARTH_ECC, e[1]]).range(height3Range);
+
+
+    var planetCountScale = d3.scaleLinear()
+        .domain([0, planetData.length])
+        .range(height2Range);
+
+
+    X_SCALES[PLANET_RADIUS_EARTH] = earthRadiusX;
+    Y_SCALES[PLANET_RADIUS_EARTH] = earthRadiusY;
+
+    X_SCALES[PLANET_RADIUS_JUPITER] = jupiterRadiusX;
+    Y_SCALES[PLANET_RADIUS_JUPITER] = jupiterRadiusY;
+
+    X_SCALES[STAR_RADIUS] = starRadiusX;
+    Y_SCALES[STAR_RADIUS] = starRadiusY;
+
+    X_SCALES[PLANET_MASS_EARTH] = earthMassX;
+    Y_SCALES[PLANET_MASS_EARTH] = earthMassY;
+
+    X_SCALES[PLANET_MASS_JUPITER] = jupiterMassX;
+    Y_SCALES[PLANET_MASS_JUPITER] = jupiterMassY;
+
+    X_SCALES[STAR_MASS] = starMassX;
+    Y_SCALES[STAR_MASS] = starMassY;
+
+    X_SCALES[STAR_TEMP] = starTempX;
+    Y_SCALES[STAR_TEMP] = starTempY;
+
+    X_SCALES[ORBIT_ECCENTRICITY] = eccScaleX;
+    Y_SCALES[ORBIT_ECCENTRICITY] = eccScaleY;
+
+    X_SCALES[ORBIT_RAD_MAX] = orbitRadiusX;
+    Y_SCALES[ORBIT_RAD_MAX] = orbitRadiusY;
+
+    Y_SCALES['count'] = planetCountScale;
+}
 function initChart(planetData) {
     /**
      * Get the canvas
@@ -246,50 +337,7 @@ function initChart(planetData) {
     /**
      * Create scales
      */
-    var e = d3.extent(planetData, function (d) {return d[PLANET_RADIUS_EARTH]; });
-    var earthRadiusScale = d3.scaleLinear()
-        //.domain(d3.extent(planetData, function (d) {return d[PLANET_RADIUS_EARTH];}))
-        .domain([e[0], 1, e[1]])
-        .range([POINT_RAD, width/2, width - POINT_RAD]);
-
-
-    e = d3.extent(planetData, function (d) {return d[PLANET_RADIUS_JUPITER]; });
-    var jupiterRadiusScale = d3.scaleLinear()
-        //.domain(d3.extent(planetData, function (d) {return d[PLANET_RADIUS_JUPITER];}))
-        .domain([e[0], 1, e[1]])
-        .range([POINT_RAD, width - POINT_RAD]);
-
-    e = d3.extent(planetData, function (d) {return d[STAR_RADIUS]; } );
-    var starRadiusScale = d3.scaleLinear()
-        //.domain(d3.extent(planetData, function (d) {return d[STAR_RADIUS];}))
-        .domain([e[0], 1, e[1]])
-        .range([POINT_RAD, width - POINT_RAD]);
-
-    var planetCountScale = d3.scaleLinear()
-        .domain([0, planetData.length])
-        .range([POINT_RAD, height - POINT_RAD]);
-
-    var orbitRadiusScale = d3.scaleLinear()
-        .domain(d3.extent(planetData, function (d) { return d[ORBIT_RAD_MAX] ; }))
-        .range([height - POINT_RAD, POINT_RAD]);
-
-    e = d3.extent(planetData, function (d) {return d[ORBIT_ECCENTRICITY]; } );
-    var eccScaleX = d3.scaleLinear()
-        .domain([e[0], 0.0167, e[1]])
-        .range([POINT_RAD, width/2, width - POINT_RAD]);
-
-    var eccScaleY = d3.scaleLinear()
-        .domain([e[0], 0.0167, e[1]])
-        .range([height - POINT_RAD, height/2, POINT_RAD]);
-
-
-    X_SCALES[PLANET_RADIUS_EARTH] = earthRadiusScale;
-    X_SCALES[PLANET_RADIUS_JUPITER] = jupiterRadiusScale;
-    X_SCALES[STAR_RADIUS] = starRadiusScale;
-    X_SCALES[ORBIT_ECCENTRICITY] = eccScaleX;
-    Y_SCALES[ORBIT_ECCENTRICITY] = eccScaleY;
-    Y_SCALES['count'] = planetCountScale;
-    Y_SCALES[ORBIT_RAD_MAX] = orbitRadiusScale;
+    loadScales(planetData, width, height);
     /**
      * Create the background
      */
@@ -332,21 +380,30 @@ function updateComparison(planetData) {
     var rad = 'radius';
 
     var hudData = [
-        { 'name' : 'Earth',
-          'radius' : EARTH_RADIUS,
-          'orbit_rad' : KM_AU
+        {   'name' : 'Earth',
+            'radius' : EARTH_RADIUS,
+            'orbit_rad' : KM_AU,
+            'mass' : 1,
+            'temp' : 0
         },
-        { 'name' : planetData[PLANET_NAME],
-          'radius' : Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH]),
-          'orbit_rad' : Math.round(KM_AU * planetData[ORBIT_RAD_MAX])
+        {   'name' : planetData[PLANET_NAME],
+            'radius' : Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH]),
+            'orbit_rad' : Math.round(KM_AU * planetData[ORBIT_RAD_MAX]),
+            'mass' : planetData[PLANET_MASS_EARTH],
+            'temp' : 0
+
         },
-        { 'name' : 'Sun',
-          'radius' : SUN_RADIUS,
-          'orbit_rad' : KM_AU
+        {   'name' : 'Sun',
+            'radius' : SUN_RADIUS,
+            'orbit_rad' : KM_AU,
+            'mass' : 1,
+            'temp' : SUN_TEMP
         },
-        { 'name' : planetData[STAR_NAME],
-          'radius' : Math.round(SUN_RADIUS * planetData[STAR_RADIUS]),
-          'orbit_rad' : KM_AU
+        {   'name' : planetData[STAR_NAME],
+            'radius' : Math.round(SUN_RADIUS * planetData[STAR_RADIUS]),
+            'orbit_rad' : KM_AU,
+            'mass' : planetData[STAR_MASS],
+            'temp' : planetData[STAR_TEMP]
         }
     ];
 
@@ -374,7 +431,15 @@ function updateComparison(planetData) {
       .append('tspan')
         .attr('x', function (d, i) { return 10 + 200 * i; })
         .attr('dy', '1.2em')
-        .text(function (d) { return 'Orbital Radius: ' + d['orbit_rad'] + ' km'; });
+        .text(function (d) { return 'Orbital Radius: ' + d['orbit_rad'] + ' km'; })
+      .append('tspan')
+        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('dy', '1.2em')
+        .text(function (d) { return 'Mass: ' + d['mass'] ; })
+      .append('tspan')
+        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('dy', '1.2em')
+        .text(function (d) { return 'Temperature: ' + d['temp'] + 'K'; });
 
 
 }
@@ -390,15 +455,15 @@ function changeX(d) {
     var prop = sel.property('value');
     d3.selectAll(ID(ID_PLANET_CHART) + ' circle')
         .attr('cx', function (d) { return X_SCALES[prop](d[prop]); })
-        .attr('stroke-width', function (d) { return 1 + d[prop]/10; })
-        .attr('r', function (d) { return POINT_RAD + d[prop]/7; })
+        .attr('stroke-width', function (d) { return 1; })
+        .attr('r', function (d) { return POINT_RAD; })
 }
 
 function changeY(d) {
     var sel = d3.select(this);
     var prop = sel.property('value');
     d3.selectAll(ID(ID_PLANET_CHART) + ' circle')
-        .attr('cy', function (d, i) { return prop == 'count' ? Y_SCALES[prop](i) : Y_SCALES[prop](d[prop]); })
+        .attr('cy', function (d) { return Y_SCALES[prop](d[prop]); })
 }
 
 function main(error, data) {
@@ -410,6 +475,7 @@ function main(error, data) {
             ;
     });
     data = convertDataFormats(data);
+    console.log(data);
     initAll(data);
 }
 
@@ -425,33 +491,34 @@ function convertDataFormats (data) {
         data[i][PLANET_MASS_JUPITER] = +data[i][PLANET_MASS_JUPITER];
         data[i][PLANET_YEAR_LENGTH] = +data[i][PLANET_YEAR_LENGTH];
         data[i][STAR_RADIUS] = +data[i][STAR_RADIUS];
+        data[i][STAR_MASS] = +data[i][STAR_MASS];
+        data[i][STAR_TEMP] = +data[i][STAR_TEMP];
         data[i][ORBIT_RAD_MAX] = +data[i][ORBIT_RAD_MAX];
         data[i][ORBIT_ECCENTRICITY] = +data[i][ORBIT_ECCENTRICITY];
         data[i][ROWID] = data[i][ROWID]-1;
+
     }
     return data
 }
 
-function updateChart (data) {
+function updateChart ( data ) {
     /**
      * Generate points
      */
     var planetChart = d3.select(ID(ID_PLANET_CHART));
 
     var points = planetChart.selectAll('circle')
-        .data(planetData);
+        .data( data );
 
     points = points.enter()
         .append('circle')
         .attr('fill', 'steelblue')
         .attr('stroke', 'white')
         .merge(points)
-        .attr('stroke-width', function (d) { return 1 + d[PLANET_RADIUS_EARTH]/10; })
-        .attr('r', function (d) { return POINT_RAD + d[PLANET_RADIUS_EARTH]/7; })
-        //.attr('r', function (d) { return POINT_RAD + d[PLANET_RADIUS_EARTH] ; })
-        .attr('cy', function (d, i) { return planetCountScale(i); } )
-        //.attr('cy', function (d) { return orbitRadiusScale(d[ORBIT_RAD_MAX]); } )
-        .attr('cx', function (d) { return earthRadiusScale(d[PLANET_RADIUS_EARTH]);} );
+        .attr('stroke-width', function (d) { return 1 })
+        .attr('r', function (d) { return POINT_RAD })
+        .attr('cy', function (d) { return Y_SCALES[ORBIT_RAD_MAX](d[ORBIT_RAD_MAX]); } )
+        .attr('cx', function (d) { return X_SCALES[PLANET_RADIUS_EARTH](d[PLANET_RADIUS_EARTH]);} );
 
     points.on('click', function (d) { debugClick(d); updateComparison(d); initOrbital(d); });
 }
