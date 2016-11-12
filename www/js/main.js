@@ -30,8 +30,10 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     PLANET_RADIUS_EARTH = 'pl_rade',
     PLANET_MASS_JUPITER = 'pl_massj',
     PLANET_MASS_EARTH = 'pl_masse',
-    PLANET_NAME = 'pl_name,',
+    PLANET_NAME = 'pl_name',
+    PLANET_LETTER = 'pl_letter',
     PLANET_YEAR_LENGTH = 'pl_orbper',
+    STAR_NAME = 'pl_hostname',
     STAR_RADIUS = 'st_rad',
     STAR_CLASS = 'st_spstr',
     STAR_COLOR_COUNT = 'st_colorn',
@@ -50,7 +52,8 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     st_c1   ='st_c1',
     st_teff = 'st_teff',
     EARTH_RADIUS =  6353,
-    SUN_RADIUS = 695700;
+    SUN_RADIUS = 695700,
+    KM_AU = 149597871;
 
 
 /*
@@ -222,7 +225,7 @@ function initOrbital(planetData) {
     planetOrbits.append('ellipse')
         .attr('transform', 'translate(900, 450)')
         .attr('ry', function (d) { return AU * d[ORBIT_RAD_MAX]; })
-        .attr('rx', function (d) { return AU * d[ORBIT_RAD_MAX] * Math.sqrt(1-d['pl_orbeccen']); })
+        .attr('rx', function (d) { return AU * d[ORBIT_RAD_MAX] * Math.sqrt(1-d[ORBIT_ECCENTRICITY]); })
         .attr('stroke', 'lightgray')
         .attr('fill', 'none')
         .attr('stroke-width', 2);
@@ -272,8 +275,7 @@ function initChart(planetData) {
     e = d3.extent(planetData, function (d) {return d[ORBIT_ECCENTRICITY]; } );
     var eccScaleX = d3.scaleLinear()
         .domain([e[0], 0.0167, e[1]])
-        .range([width - POINT_RAD, width/2, POINT_RAD]);
-
+        .range([POINT_RAD, width/2, width - POINT_RAD]);
 
     var eccScaleY = d3.scaleLinear()
         .domain([e[0], 0.0167, e[1]])
@@ -333,12 +335,25 @@ function updateComparison(planetData) {
     var rad = 'radius';
 
     var hudData = [
-        { 'radius' : EARTH_RADIUS },
-        { 'radius' : Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH]) },
-        { 'radius' : SUN_RADIUS },
-        { 'radius' : Math.round(SUN_RADIUS * planetData[STAR_RADIUS]) }
+        { 'name' : 'Earth',
+          'radius' : EARTH_RADIUS,
+          'orbit_rad' : KM_AU
+        },
+        { 'name' : planetData[PLANET_NAME],
+          'radius' : Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH]),
+          'orbit_rad' : Math.round(KM_AU * planetData[ORBIT_RAD_MAX])
+        },
+        { 'name' : 'Sun',
+          'radius' : SUN_RADIUS,
+          'orbit_rad' : KM_AU
+        },
+        { 'name' : planetData[STAR_NAME],
+          'radius' : Math.round(SUN_RADIUS * planetData[STAR_RADIUS]),
+          'orbit_rad' : KM_AU
+        }
     ];
-    console.log(hudData)
+
+    d3.selectAll('tspan').remove();
 
     var stats = comparison.selectAll('text')
         .data(hudData);
@@ -348,15 +363,28 @@ function updateComparison(planetData) {
         .attr('fill', 'black')
         .attr('font-family', 'sans-serif')
         .attr('font-size', '12px')
-      .merge(stats)
-        .attr('x', function (d, i) { return 10 + 200 * i; } )
-        .attr('y', 20 )
-        .text(function (d) { return d[rad] + ' km'; });
+      .merge(stats);
+
+    stats
+      .append('tspan')
+        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('dy', '1.2em')
+        .text(function (d) { return 'Name: ' + d['name']; } )
+      .append('tspan')
+        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('dy', '1.2em')
+        .text(function (d) { return 'Radius: ' + d[rad] + ' km'; } )
+      .append('tspan')
+        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('dy', '1.2em')
+        .text(function (d) { return 'Orbital Radius: ' + d['orbit_rad'] + ' km'; });
+
+
 }
 
 function initAll(planetData) {
-    initOrbital(planetData[2347]);
-    initComparison(planetData[2347]);
+    initOrbital(planetData[0]);
+    initComparison(planetData[0]);
     initChart(planetData);
 }
 
@@ -379,17 +407,17 @@ function changeY(d) {
 function main(error, data) {
     data = data.filter(function (d) {
         return d !== null &&
-            d[PLANET_RADIUS_EARTH] !== '';} );
+            +d[PLANET_RADIUS_EARTH] !== 0 &&
+            +d[ORBIT_RAD_MAX] !== 0 &&
+            +d[ORBIT_ECCENTRICITY] !== 0
+            ;
+    });
     data = convertDataFormats(data);
     initAll(data);
 }
 
 function initComparison( data ) {
-    var planetChart = d3.select(ID(ID_COMPARISON));
-
-    var width = planetChart.attr('width'),
-        height = planetChart.attr('height');
-
+    updateComparison(data);
 }
 
 function convertDataFormats (data) {
