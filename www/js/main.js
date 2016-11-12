@@ -62,6 +62,9 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     EARTH_RADIUS =  6353,
     EARTH_ECC = 0.0167;
 
+    var COLOR_SCALE = d3.scaleLinear()
+        .domain([2400, 3700, 5200, 6000, 7500, 10000, 30000])
+        .range(['SandyBrown', 'NavajoWhite',  'Gold', 'LemonChiffon', 'Azure', 'LightSteelBlue' ])
 
 
 /*
@@ -183,6 +186,17 @@ function initOrbital(planetData) {
     planetOrbits.selectAll("*").remove();
     planetOrbits.datum(planetData);
 
+    /**
+     * Create the background
+     */
+    var gradient = createGradient(planetOrbits);
+
+    var background = planetOrbits.append('rect')
+        .attr('id', ID_BG)
+        .attr('width', width)
+        .attr('height', height)
+        .style('fill', 'url(' + ID(ID_BG_GRADIENT) + ')');
+
     var hud = {
         'sun' : planetOrbits.append('circle'),
         'exo': planetOrbits.append('circle'),
@@ -201,7 +215,7 @@ function initOrbital(planetData) {
     hud['star']
         .attr('transform', 'translate(900, '+ VERT_CENT + ')')
         .attr('r', function (d) { return Scale * SUN_RADIUS * d[STAR_RADIUS]})
-        .attr('fill', 'firebrick');
+        .attr('fill', function (d) { return COLOR_SCALE(d[STAR_TEMP]); });
 
     hud['earth']
         .attr('transform', 'translate(300, '+ (Scale * AU + VERT_CENT) + ')')
@@ -414,7 +428,7 @@ function updateComparison(planetData) {
 
     stats = stats.enter()
       .append('text')
-        .attr('fill', 'black')
+        .attr('fill', 'whitesmoke')
         .attr('font-family', 'sans-serif')
         .attr('font-size', '12px')
       .merge(stats);
@@ -513,7 +527,7 @@ function updateChart ( data ) {
     points = points.enter()
         .append('circle')
         .attr('fill', 'steelblue')
-        .attr('stroke', 'white')
+        .attr('stroke', 'whitesmoke')
         .merge(points)
         .attr('stroke-width', function (d) { return 1 })
         .attr('r', function (d) { return POINT_RAD })
