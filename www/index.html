@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='UTF-8'>
+    <title>OpenSpace Exoplanet Explorer</title>
+    <link rel='stylesheet' href='css/style.css'/>
+</head>
+
+<body>
+
+<div class='container'>
+    <header>
+        <h1>OpenSpace Exoplanet Explorer</h1>
+    </header>
+    <div class='view'>
+        <svg id="orbital" width='1200' height='900'>
+        </svg>
+        <select id="planet-chart-x">
+            <option selected value="pl_rade">Radius - Earth</option>
+            <option value="pl_radj">Radius - Jupiter</option>
+            <option value="st_rad">Radius - Star</option>
+            <option value="pl_masse">Mass - Earth</option>
+            <option value="st_mass">Mass - Star</option>
+            <option value="st_teff">Temperature - Star</option>
+            <option value="pl_orbsmax">Orbit</option>
+            <option value="pl_orbeccen">Eccentricity</option>
+        </select>
+        <select id="planet-chart-y">
+            <option value="pl_rade">Radius - Earth</option>
+            <option value="pl_radj">Radius - Jupiter</option>
+            <option value="st_rad">Radius - Star</option>
+            <option value="pl_masse">Mass - Earth</option>
+            <option value="st_mass">Mass - Star</option>
+            <option value="st_teff">Temperature - Star</option>
+            <option selected value="pl_orbsmax">Orbit</option>
+            <option value="pl_orbeccen">Eccentricity</option>
+        </select>
+        <br/>
+        <svg id='planet-comparison' width='1200' height='400'>
+        </svg>
+        <svg id='planet-chart' width='400' height='400'>
+        </svg>
+    </div>
+    <footer>
+        <div>Name: Matthew Territo; E-Mail: territo@cs.utah.edu; UID: u1076954</div>
+    </footer>
+</div>
+<!--<script src='https://d3js.org/d3.v4.min.js'></script>-->
+<script type='application/javascript' src='js/d3.min.js'></script>
+<script type='application/javascript' src='js/main.js'></script>
+</body>
+</html>
