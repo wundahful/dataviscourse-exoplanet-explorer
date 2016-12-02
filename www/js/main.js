@@ -427,7 +427,8 @@ function initMap(planetData) {
         .attr('opacity', .4)
         .attr('r', POINT_RAD/2)
         .classed(CLASS_PLANET_POINT, true)
-        //.classed(CLASS_PLANET_HABITABLE, function (d) { return d[HABITABLE]});
+        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);
+    //.classed(CLASS_PLANET_HABITABLE, function (d) { return d[HABITABLE]});
 
 
     galacticMap.append('circle')
@@ -437,27 +438,21 @@ function initMap(planetData) {
         .attr('r', POINT_RAD);
 
     /** Set Hover */
-    points.on('mouseover', function (d) {
-        this.parentNode.appendChild(this);
-        d3.select(this).classed(CLASS_CHART_HOVER, true);
-        pointHover(d, ID_PLANET_CHART);
-    })
-        .on('mouseleave', function () {
+    points.on('click', function (d) { debugClick(d); updateComparison(d); initOrbital(d); })
+        .on('mouseover', function (d) {
+            pointHover(d);
+            updateComparison(d);
+        })
+        .on('mouseout', function () {
             d3.select(this).classed(CLASS_CHART_HOVER, false);
             pointClearHover(ID_PLANET_CHART);
-        })
-        .on('click', function (d) { debugClick(d); updateComparison(d); initOrbital(d); });
-
+        });
 }
 
-function pointHover(data, svgID) {
-    d3.select(ID(svgID))
-      .selectAll('circle' + CLS(CLASS_PLANET_POINT))
-      .filter(function (d) { return d[ROWID] == data[ROWID]; })
-        .each(function () {
-            this.parentNode.appendChild(this);
-        })
-        .classed(CLASS_CHART_HOVER, true);
+function pointHover(data) {
+    d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT) + CLS(data[ROWID]))
+        .classed(CLASS_CHART_HOVER, true)
+        .each(function () { this.parentNode.appendChild(this); });
 
 }
 
@@ -647,7 +642,6 @@ function updateComparison(planetData) {
 
     d3.select(ID(ID_STAR_GRAD_START))
         .attr('style', function (d) {
-            console.log(this, COLOR_SCALE(planetData[STAR_TEMP]), COLOR_SCALE(planetData[STAR_TEMP]).toString());
             return 'stop-color:' + COLOR_SCALE(planetData[STAR_TEMP])
         })
 
@@ -694,7 +688,7 @@ function convertDataFormats(data) {
             data[i][PROPERTIES_NUM[j]] = +data[i][PROPERTIES_NUM[j]];
         }
 
-        data[i][ROWID] = i;
+        data[i][ROWID] = 'row_' + i;
 
         /** Add habitable zone information */
         //var hab = calculateHabitableZone(data[i]);
@@ -721,7 +715,6 @@ function calculateHabitableZone(d) {
     var outer = Math.sqrt(L/0.53);
     var habitable = (inner <= orb && orb <= d[outer]) ? true : false;
 
-    console.log(L, d[STAR_LUMINOSITY], habitable, inner, outer);
     return [habitable, inner, outer]
 }
 
@@ -746,16 +739,18 @@ function updateChart ( data ) {
         .attr('r', function (d) { return POINT_RAD })
       .merge(points)
         .attr('cx', function (d) { return X_SCALES[props[0]](d[props[0]]);} )
-        .attr('cy', function (d) { return Y_SCALES[props[1]](d[props[1]]); } );
+        .attr('cy', function (d) { return Y_SCALES[props[1]](d[props[1]]); } )
+        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);
 
 
     points.on('click', function (d) {
             debugClick(d); updateComparison(d); initOrbital(d); })
-        .on('mouseenter', function (d) {
-            this.parentNode.appendChild(this);
-            d3.select(this).classed(CLASS_CHART_HOVER, true);
-            pointHover(d, ID_MAP); })
-        .on('mouseleave', function () {
+        .on('mouseover', function (d) {
+            pointHover(d);
+            updateComparison(d)
+        })
+
+        .on('mouseout', function () {
             d3.select(this).classed(CLASS_CHART_HOVER, false);
             pointClearHover(ID_MAP);
         });

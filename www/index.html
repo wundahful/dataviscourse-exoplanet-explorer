@@ -15,12 +15,6 @@
     </header>
     <main style="width: 1204px; margin: auto">
         <div class='view'>
-            <section>
-                <svg id='galactic-map' width='600' height='600'>
-                </svg>
-                <svg id='planet-chart' width='600' height='600'>
-                </svg>
-            </section>
             <section style="text-align: right;">
                 <select id="planet-chart-x">
                     <option selected value="pl_rade">Radius - Earth</option>
@@ -44,6 +38,12 @@
                     <option selected value="pl_orbsmax">Orbit</option>
                     <option value="pl_orbeccen">Eccentricity</option>
                 </select>
+            </section>
+            <section>
+                <svg id='galactic-map' width='600' height='600'>
+                </svg>
+                <svg id='planet-chart' width='600' height='600'>
+                </svg>
             </section>
             <section>
                 <svg id='planet-comparison' width='1200' height='400'>
@@ -107,8 +107,6 @@
                             </g>
                         </g>
                     </symbol>
-                </svg>
-                <svg id="orbital" width='1200' height='900'>
                 </svg>
             </section>
         </div>
