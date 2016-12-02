@@ -544,8 +544,8 @@ function updateComparison(planetData) {
 
     var rad = 'radius';
     var r = 10;
-    var pad = 20;
-    var maxR = colWidth/2 - pad;
+    var pad = 40;
+    var maxR = colWidth - pad;
     var r2 = 10/EARTH_RADIUS;
     var TYPE_P = 'P',
         TYPE_S = 'S';
@@ -634,10 +634,14 @@ function updateComparison(planetData) {
 
     planets = planets.enter()
       .append('svg:use')
-        .attr('x', function (d, i) { return colWidth/4 + i * colWidth; })
-        .attr('y', function (d, i) { return colHeight/2; })
-        .attr('width', function (d) { return d['r'] !== 0 ? d['r'] : colWidth/5; })
-        .attr('height', function (d) { return d['r'] !== 0 ? d['r'] : colWidth/5; })
+        .attr('x', function (d, i) {
+            return d['r'] !== 0 ? colWidth/2 + i * colWidth - d['r']/2 : colWidth/2 + i * colWidth - maxR/2;
+        })
+        .attr('y', function (d) {
+            return d['r'] !== 0 ? colHeight/2 - d['r']/2 : colHeight/2 - maxR/2;
+        })
+        .attr('width', function (d) { return d['r'] !== 0 ? d['r'] : maxR; })
+        .attr('height', function (d) { return d['r'] !== 0 ? d['r'] : maxR; })
         .attr('xlink:href', function (d) { return d['r'] != 0 ? ID(d['img']) : ID(ID_SYMBOL_Q); })
       .merge(planets);
 
