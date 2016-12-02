@@ -30,8 +30,6 @@ var ID_TOKEN = '#',
     ID_STAR_GRAD_START = 'star-grad-start',
     CLASS_MAP_GRID = 'map-grid',
     CLASS_CHART_HOVER = 'chart-hover',
-    CLASS_CHART_UNHOVERED = 'chart-unhovered',
-    CLASS_PLANET_HABITABLE = 'planet-habitable',
     CLASS_PLANET_POINT = 'planet-point',
     CLASS_COMPARISON_TEXT = 'comp-text',
     CLASS_COMPARISON_IMAGES = 'comp-img',
@@ -58,10 +56,7 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     STAR_LUMINOSITY = 'st_lum',
     ORBIT_RAD_MAX = 'pl_orbsmax',
     ORBIT_ECCENTRICITY = 'pl_orbeccen',
-    ROWID = 'rowid',
-    HABITABLE = 'habitable',
-    HABITABLE_ZONE_INNER = 'hzi',
-    HABITABLE_ZONE_OUTER = 'hzo';
+    ROWID = 'rowid';
 
 var PROPERTIES_NUM = [
     PLANET_RADIUS_JUPITER,
@@ -303,9 +298,7 @@ function initMap(planetData) {
         .attr('opacity', .4)
         .attr('r', POINT_RAD/2)
         .classed(CLASS_PLANET_POINT, true)
-        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);
-    //.classed(CLASS_PLANET_HABITABLE, function (d) { return d[HABITABLE]});
-
+        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);  
 
     galacticMap.append('circle')
         .attr('cy', function (d) { return proj([0, 0])[0]; })
@@ -564,34 +557,10 @@ function convertDataFormats(data) {
         }
 
         data[i][ROWID] = CLASS_ROW_PREFIX + i;
-
-        /** Add habitable zone information */
-        //var hab = calculateHabitableZone(data[i]);
-        // data[i][HABITABLE] = hab[0];
-        // data[i][HABITABLE_ZONE_INNER] = hab[1];
-        // data[i][HABITABLE_ZONE_OUTER] = hab[2];
     }
     return data
 }
 
-function calculateHabitableZone(d) {
-    if (d[STAR_LUMINOSITY] == 0 ||
-        d[ORBIT_RAD_MAX] == 0) {
-        return [false, 0, 0]
-    }
-
-    var lSun = 3.846e+26;
-    var L = Math.pow(10, d[STAR_LUMINOSITY]);
-
-
-    var orb = d[ORBIT_RAD_MAX]
-    var ecc = orb * Math.sqrt(1-d[ORBIT_ECCENTRICITY]);
-    var inner = Math.sqrt(L/1.1);
-    var outer = Math.sqrt(L/0.53);
-    var habitable = (inner <= orb && orb <= d[outer]) ? true : false;
-
-    return [habitable, inner, outer]
-}
 
 function updateChart ( data ) {
     /**
@@ -608,7 +577,6 @@ function updateChart ( data ) {
 
     points = points.enter()
       .append('circle')
-        //.classed(CLASS_PLANET_HABITABLE, function (d) { return d[HABITABLE]})
         .attr('fill', 'steelblue')
         .attr('r', function (d) { return POINT_RAD })
       .merge(points)
