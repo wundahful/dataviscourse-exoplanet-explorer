@@ -19,7 +19,6 @@ var ID_TOKEN = '#',
     ID_PLANET_CHART_X = 'planet-chart-x',
     ID_PLANET_CHART_Y = 'planet-chart-y',
     ID_MAP = 'galactic-map',
-    ID_ORBITAL = 'orbital',
     ID_COMPARISON = 'planet-comparison',
     ID_BG_GRADIENT = 'gradient-bg',
     ID_BG = 'bg',
@@ -171,116 +170,6 @@ function createGradient( svg ) {
         .attr("stop-opacity", 1);
 
     return gradient;
-}
-
-function drawOrbit(planet) {
-    var planetOrbits = d3.select(ID(ID_PLANET_CHART));
-
-    var path = "M 0 0 " +
-                "A 50 50 0 0 1 0 0 Z";
-
-    var orbit = planetOrbits.append('path')
-        .attr('d', path)
-        .attr('stroke', 'black')
-        .attr('stroke-width', 2);
-
-    transitionOrbit(planet);
-
-    return orbit;
-}
-
-function transitionOrbit(planet) {
-    var T_YEAR = 7000;
-    planet.transition()
-        .duration(T_YEAR)
-        .ease(d3.easeLinear)
-        .attrTween('transform', orbitTransform())
-        //.each('end', transitionOrbit(planet));
-}
-
-function orbitTransform() {
-    return function(d, i, a) {
-        return function (t) {
-            return 'translate(' + (250 + 50 * Math.cos(t))+ ', ' + (250 + 50 * Math.sin(t)) + ')';
-        }
-    }
-}
-function initOrbital(planetData) {
-    /**
-     * Get the canvas
-     */
-    var planetOrbits = d3.select(ID(ID_ORBITAL));
-
-    var width = planetOrbits.attr('width'),
-        height = planetOrbits.attr('height');
-
-    planetOrbits.selectAll("*").remove();
-    planetOrbits.datum(planetData);
-
-    /**
-     * Create the background
-     */
-    var gradient = createGradient(planetOrbits);
-
-    var background = planetOrbits.append('rect')
-        .attr('id', ID_BG)
-        .attr('width', width)
-        .attr('height', height)
-        .style('fill', 'url(' + ID(ID_BG_GRADIENT) + ')');
-
-    var hud = {
-        'sun' : planetOrbits.append('circle'),
-        'exo': planetOrbits.append('circle'),
-        'earth': planetOrbits.append('circle'),
-        'star': planetOrbits.append('circle')
-    };
-
-    var VERT_CENT = 450;
-    var Scale = .0000026;
-
-    hud['sun']
-        .attr('transform', 'translate(300, '+ VERT_CENT + ')')
-        .attr('r', Scale * SUN_RADIUS)
-        .attr('fill', 'gold');
-
-    hud['star']
-        .attr('transform', 'translate(900, '+ VERT_CENT + ')')
-        .attr('r', function (d) { return Scale * SUN_RADIUS * d[STAR_RADIUS]})
-        .attr('fill', function (d) { return COLOR_SCALE(d[STAR_TEMP]); });
-
-    hud['earth']
-        .attr('transform', 'translate(300, '+ (Scale * AU + VERT_CENT) + ')')
-        .attr('r', Scale * EARTH_RADIUS)
-        .attr('fill', 'steelblue');
-
-    hud['exo']
-        .attr('transform', function (d) {
-            return 'translate(900, '+ (VERT_CENT + (Scale * AU * d[ORBIT_RAD_MAX])) + ')'
-        })
-        .attr('r', function (d) { return Scale * EARTH_RADIUS * d[PLANET_RADIUS_EARTH]})
-        .attr('fill', 'darkgray');
-
-    //Orbit
-    // EARTH ORBIT
-    planetOrbits.append('ellipse')
-        .attr('transform', 'translate(300, 450)')
-        .attr('ry', Scale * AU)
-        .attr('rx', Scale * AU * Math.sqrt(1-EARTH_ECC))
-        .attr('stroke', 'lightgray')
-        .attr('fill', 'none')
-        .attr('stroke-width', 2);
-
-    // EXO ORBIT
-    planetOrbits.append('ellipse')
-        .attr('transform', 'translate(900, 450)')
-        .attr('ry', function (d) { return Scale * AU * d[ORBIT_RAD_MAX]; })
-        .attr('rx', function (d) { return Scale * AU * d[ORBIT_RAD_MAX] * Math.sqrt(1-d[ORBIT_ECCENTRICITY]); })
-        .attr('stroke', 'lightgray')
-        .attr('fill', 'none')
-        .attr('stroke-width', 2);
-
-    //drawOrbit(hud['exo']);
-
 }
 
 function loadScales(planetData, width, height) {
@@ -650,7 +539,6 @@ function updateComparison(planetData) {
 function initAll(planetData) {
     initMap(planetData);
     initChart(planetData);
-    initOrbital(planetData[0]);
     initComparison(planetData[0]);
 }
 
