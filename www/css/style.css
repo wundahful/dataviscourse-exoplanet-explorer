@@ -6,3 +6,10 @@ html {
     background-color: dimgrey;
     color: whitesmoke;
 }
+
+.map_grid {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1px;
+    opacity: .4;
+}

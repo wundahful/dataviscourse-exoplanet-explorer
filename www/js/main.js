@@ -18,10 +18,12 @@ var ID_TOKEN = '#',
     ID_PLANET_CHART = 'planet-chart',
     ID_PLANET_CHART_X = 'planet-chart-x',
     ID_PLANET_CHART_Y = 'planet-chart-y',
+    ID_MAP = 'galactic-map',
     ID_ORBITAL = 'orbital',
     ID_COMPARISON = 'planet-comparison',
     ID_BG_GRADIENT = 'gradient-bg',
-    ID_BG = 'bg';
+    ID_BG = 'bg',
+    CLASS_MAP_GRID = 'map_grid';
 
 /*
  * Data Variables
@@ -39,6 +41,8 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     STAR_COLOR_COUNT = 'st_colorn',
     STAR_TEMP = 'st_teff',
     STAR_MASS = 'st_mass',
+    STAR_LONG = 'st_glon',
+    STAR_LAT = 'st_glat',
     ORBIT_RAD_MAX = 'pl_orbsmax',
     ORBIT_ECCENTRICITY = 'pl_orbeccen',
     ROWID = 'rowid',
@@ -339,6 +343,52 @@ function loadScales(planetData, width, height) {
 
     Y_SCALES['count'] = planetCountScale;
 }
+
+function initMap(planetData) {
+    var galacticMap = d3.select(ID(ID_MAP));
+    console.log(d3.extent(planetData, function (d) {return d[STAR_LONG] }));
+    console.log(d3.extent(planetData, function (d) {return d[STAR_LAT] }));
+    var width = galacticMap.attr('width'),
+        height = galacticMap.attr('height');
+
+    var proj = d3.geoAzimuthalEquidistant()
+        .translate([width/2, height/2])
+        .scale(100)
+
+    var mapPath = d3.geoPath()
+        .projection(proj);
+
+    var grat = d3.geoGraticule()
+
+    galacticMap.append('path')
+        .datum(grat)
+        .classed(CLASS_MAP_GRID, true   )
+        .attr('d', mapPath);
+
+    galacticMap.append('path')
+        .datum(grat.outline)
+        .classed(CLASS_MAP_GRID, true   )
+        .attr('d', mapPath);
+
+    var points = galacticMap.selectAll('circle')
+        .data(planetData)
+      .enter()
+      .append('circle')
+        .attr('cx', function (d) { return proj([d[STAR_LAT], d[STAR_LONG]])[0]; })
+        .attr('cy', function (d) { return proj([d[STAR_LAT], d[STAR_LONG]])[1]; })
+        .attr('fill', 'darkred')
+        .attr('opacity', .4)
+        .attr('r', POINT_RAD/2)
+
+    galacticMap.append('circle')
+        .attr('cy', function (d) { return proj([0, 0])[0]; })
+        .attr('cx', function (d) { return proj([0, 0])[1]; })
+        .attr('fill', 'wheat')
+        .attr('r', POINT_RAD)
+
+
+}
+
 function initChart(planetData) {
     /**
      * Get the canvas
@@ -462,6 +512,7 @@ function initAll(planetData) {
     initOrbital(planetData[0]);
     initComparison(planetData[0]);
     initChart(planetData);
+    initMap(planetData);
 }
 
 function changeX(d) {
@@ -482,10 +533,10 @@ function changeY(d) {
 
 function main(error, data) {
     data = data.filter(function (d) {
-        return d !== null &&
-            +d[PLANET_RADIUS_EARTH] !== 0 &&
-            +d[ORBIT_RAD_MAX] !== 0 &&
-            +d[ORBIT_ECCENTRICITY] !== 0
+        return d !== null // &&
+            // +d[PLANET_RADIUS_EARTH] !== 0 &&
+            // +d[ORBIT_RAD_MAX] !== 0 &&
+            // +d[ORBIT_ECCENTRICITY] !== 0
             ;
     });
     data = convertDataFormats(data);
@@ -510,6 +561,8 @@ function convertDataFormats (data) {
         data[i][ORBIT_RAD_MAX] = +data[i][ORBIT_RAD_MAX];
         data[i][ORBIT_ECCENTRICITY] = +data[i][ORBIT_ECCENTRICITY];
         data[i][ROWID] = data[i][ROWID]-1;
+        data[i][STAR_LONG] = +data[i][STAR_LONG];
+        data[i][STAR_LAT] = +data[i][STAR_LAT];
 
     }
     return data
