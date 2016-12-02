@@ -80,6 +80,8 @@ var PROPERTIES_STR = [
     STAR_CLASS,
 ];
 
+var COLOR_SCALE_2D, COLOR_SCALE_X, COLOR_SCALE_Y;
+
 var SELECTED_DATA;
 
 /** Astronomical Constants */
@@ -249,6 +251,8 @@ function loadScales(planetData, width, height) {
     Y_SCALES[ORBIT_RAD_MAX] = orbitRadiusY;
 
     Y_SCALES['count'] = planetCountScale;
+
+    genColorScales();
 }
 
 function initMap(planetData) {
@@ -571,11 +575,15 @@ function updateChart ( data ) {
 
     points = points.enter()
       .append('circle')
-        .attr('fill', 'steelblue')
         .attr('r', function (d) { return POINT_RAD })
       .merge(points)
-        .attr('cx', function (d) { return X_SCALES[props[0]](d[props[0]]);} )
-        .attr('cy', function (d) { return Y_SCALES[props[1]](d[props[1]]); } )
+        .attr('fill', function (d) {
+            return getColor(
+                X_SCALES[props[0]](d[props[0]]),
+                Y_SCALES[props[1]](d[props[1]]));
+        })
+        .attr('cx', function (d) { return X_SCALES[props[0]](d[props[0]]); })
+        .attr('cy', function (d) { return Y_SCALES[props[1]](d[props[1]]); })
         .attr('class', function (d) { return CLASS_PLANET_POINT + ' ' + d[ROWID]; })
         .classed(CLASS_SELECTED, function (d) { return d[ROWID] == SELECTED_DATA[ROWID] });
 
@@ -612,6 +620,42 @@ function clickPlanet(planetData) {
 
     updateComparison(SELECTED_DATA);
 }
+
+/** Adapted from old colleague's work, Kai Chang
+ * http://bl.ocks.org/syntagmatic/5bbf30e8a658bcd5152b
+ */
+function getColor(x, y) {
+    var size = d3.select(ID(ID_PLANET_CHART)).attr('width');
+
+    var color = COLOR_SCALE_2D
+        .range([COLOR_SCALE_X(x), COLOR_SCALE_Y(y)])
+        .interpolate(d3.interpolateLab);
+
+        var strength = (y - x) / (size-1);
+
+    return color(strength)
+}
+
+function genColorScales() {
+    var size = d3.select(ID(ID_PLANET_CHART)).attr('width');
+
+    var targetSize = size/6,
+        half = size/2;
+    var dom = [0, half-targetSize, half, half+targetSize, size],
+        ran = ['#8E2800', '#FFB03B', '#468966', '#FFB03B', '#8E2800'];
+
+    COLOR_SCALE_X = d3.scaleLinear()
+        .domain(dom)
+        .range(ran);
+
+    COLOR_SCALE_Y = d3.scaleLinear()
+        .domain(dom)
+        .range(ran);
+
+    COLOR_SCALE_2D = d3.scaleLinear()
+        .domain([-1, 1])
+}
+
 
 /*
  * Anonymous function that automatically runs once this file is loaded

@@ -28,8 +28,9 @@ html {
 }
 
 .planet-point {
-    stroke: whitesmoke;
-    stroke-width: 1px;
+    stroke: rgba(10, 10, 10, .2);
+    stroke-width: .5px;
+    /*fill: #AC6C82;*/
 }
 
 .planet-habitable {
@@ -42,6 +43,8 @@ html {
 }
 
 .selected {
-    fill: gold;
+    fill: #FFAA5C ;
     opacity: 1;
+    stroke: #FFFFCC;
+    stroke-width: 1.5px;
 }
