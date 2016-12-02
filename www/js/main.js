@@ -33,7 +33,8 @@ var ID_TOKEN = '#',
     CLASS_PLANET_POINT = 'planet-point',
     CLASS_COMPARISON_TEXT = 'comp-text',
     CLASS_COMPARISON_IMAGES = 'comp-img',
-    CLASS_ROW_PREFIX = 'row-';
+    CLASS_ROW_PREFIX = 'row-',
+    CLASS_SELECTED = 'selected';
 
 /*
  * Data Variables
@@ -298,7 +299,7 @@ function initMap(planetData) {
         .attr('opacity', .4)
         .attr('r', POINT_RAD/2)
         .classed(CLASS_PLANET_POINT, true)
-        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);  
+        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);
 
     galacticMap.append('circle')
         .attr('cy', function (d) { return proj([0, 0])[0]; })
@@ -307,7 +308,7 @@ function initMap(planetData) {
         .attr('r', POINT_RAD);
 
     /** Set Hover */
-    points.on('click', function (d) { debugClick(d); SELECTED_DATA = d; updateComparison(SELECTED_DATA); })
+    points.on('click', clickPlanet)
         .on('mouseover', function (d) {
             pointHover(d);
             updateComparison(d);
@@ -327,7 +328,11 @@ function pointHover(data) {
 
 function pointClearHover() {
     d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT))
-        .classed(CLASS_CHART_HOVER, false)
+        .classed(CLASS_CHART_HOVER, false);
+
+    d3.selectAll(CLS(CLASS_SELECTED))
+            .each(function () { this.parentNode.appendChild(this); });
+
 }
 
 function initChart(planetData) {
@@ -585,8 +590,7 @@ function updateChart ( data ) {
         .attr('class', function (d) { return CLASS_PLANET_POINT + ' ' + d[ROWID]; });
 
 
-    points.on('click', function (d) {
-            debugClick(d); SELECTED_DATA = d; updateComparison(SELECTED_DATA); })
+    points.on('click', clickPlanet)
         .on('mouseover', function (d) {
             pointHover(d);
             updateComparison(d)
@@ -596,6 +600,18 @@ function updateChart ( data ) {
             pointClearHover();
             updateComparison(SELECTED_DATA);
         });
+}
+
+function clickPlanet(planetData) {
+    debugClick(planetData);
+    SELECTED_DATA = planetData;
+    d3.selectAll(CLS(CLASS_PLANET_POINT) + CLS(CLASS_SELECTED))
+        .classed(CLASS_SELECTED, false);
+    d3.selectAll(CLS(planetData[ROWID]))
+        .classed(CLASS_SELECTED, true)
+        .each(function () { this.parentNode.appendChild(this); });
+
+    updateComparison(SELECTED_DATA);
 }
 
 /*

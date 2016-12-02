@@ -40,3 +40,8 @@ html {
 .planet-unknown {
 
 }
+
+.selected {
+    fill: gold;
+    opacity: 1;
+}
