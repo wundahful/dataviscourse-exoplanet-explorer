@@ -27,7 +27,9 @@ var ID_TOKEN = '#',
     CLASS_CHART_HOVER = 'chart-hover',
     CLASS_CHART_UNHOVERED = 'chart-unhovered',
     CLASS_PLANET_HABITABLE = 'planet-habitable',
-    CLASS_PLANET_POINT = 'planet-point';
+    CLASS_PLANET_POINT = 'planet-point',
+    CLASS_COMPARISON_TEXT = 'comp-text',
+    CLASS_COMPARISON_IMAGES = 'comp-img';
 
 /*
  * Data Variables
@@ -55,16 +57,13 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     HABITABLE_ZONE_INNER = 'hzi',
     HABITABLE_ZONE_OUTER = 'hzo';
 
-var PROPERTIES = [
+var PROPERTIES_NUM = [
     PLANET_RADIUS_JUPITER,
     PLANET_RADIUS_EARTH,
     PLANET_MASS_JUPITER,
     PLANET_MASS_EARTH,
-    PLANET_NAME,
     PLANET_YEAR_LENGTH,
     STAR_RADIUS,
-    STAR_CLASS,
-    STAR_COLOR_COUNT,
     STAR_TEMP,
     STAR_MASS,
     STAR_LONG,
@@ -72,6 +71,11 @@ var PROPERTIES = [
     ORBIT_RAD_MAX,
     STAR_LUMINOSITY,
     ORBIT_ECCENTRICITY
+];
+
+var PROPERTIES_STR = [
+    PLANET_NAME,
+    STAR_CLASS,
 ];
 
 /** Astronomical Constants */
@@ -526,40 +530,49 @@ function getChartSelections() {
 
 function updateComparison(planetData) {
     var comparison = d3.select(ID(ID_COMPARISON));
+    var compText = comparison.select('g' + CLS(CLASS_COMPARISON_TEXT));
+    var compIMG = comparison.select('g' + CLS(CLASS_COMPARISON_TEXT));
 
     var rad = 'radius';
+    var r = 10;
+    var r2 = 10/EARTH_RADIUS;
+    var TYPE_P = 'P',
+        TYPE_S = 'S';
 
     var hudData = [
         {   'name' : 'Earth',
             'radius' : EARTH_RADIUS,
             'orbit_rad' : KM_AU,
             'mass' : 1,
-            'temp' : 0
+            'temp' : 0,
+            'type' : TYPE_P
         },
         {   'name' : planetData[PLANET_NAME],
             'radius' : Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH]),
             'orbit_rad' : Math.round(KM_AU * planetData[ORBIT_RAD_MAX]),
             'mass' : planetData[PLANET_MASS_EARTH],
-            'temp' : 0
-
+            'temp' : 0,
+            'type' : TYPE_P
         },
         {   'name' : 'Sun',
             'radius' : SUN_RADIUS,
             'orbit_rad' : KM_AU,
             'mass' : 1,
-            'temp' : SUN_TEMP
+            'temp' : SUN_TEMP,
+            'type' : TYPE_S
         },
         {   'name' : planetData[STAR_NAME],
             'radius' : Math.round(SUN_RADIUS * planetData[STAR_RADIUS]),
             'orbit_rad' : KM_AU,
             'mass' : planetData[STAR_MASS],
-            'temp' : planetData[STAR_TEMP]
+            'temp' : planetData[STAR_TEMP],
+            'type' : TYPE_S
         }
     ];
 
-    d3.selectAll('tspan').remove();
+    compText.selectAll('tspan').remove();
 
-    var stats = comparison.selectAll('text')
+    var stats = compText.selectAll('text')
         .data(hudData);
 
     stats = stats.enter()
@@ -590,8 +603,24 @@ function updateComparison(planetData) {
         .attr('x', function (d, i) { return 10 + 200 * i; })
         .attr('dy', '1.2em')
         .text(function (d) { return 'Temperature: ' + d['temp'] + 'K'; });
-}
 
+    /** The planet/stars */
+    compIMG.selectAll('circle').remove();
+
+    var planets = compIMG.selectAll('circle')
+        .data(hudData);
+
+    planets = planets.enter()
+      .append('circle')
+        .attr('fill', 'whitesmoke')
+        .attr('cx', function (d, i) { return r + 10 + 200 * i; })
+        .attr('cy', function (d, i) { return 150; })
+        .attr('r', function (d) {return d['type'] == TYPE_P ? r * d[rad]/EARTH_RADIUS : r * d[rad]/SUN_RADIUS } )
+      .merge(planets);
+
+
+
+}
 function initAll(planetData) {
     initMap(planetData);
     initChart(planetData);
@@ -617,13 +646,20 @@ function main(error, data) {
 }
 
 function initComparison(data) {
+    var comparison = d3.select(ID(ID_COMPARISON));
+
+    comparison.append('g')
+        .classed(CLASS_COMPARISON_TEXT, true);
+    comparison.append('g')
+        .classed(CLASS_COMPARISON_IMAGES, true);
+
     updateComparison(data);
 }
 
 function convertDataFormats(data) {
     for (var i =0; i < data.length; i++) {
-        for (var j=0; j < PROPERTIES.length; j++) {
-            data[i][PROPERTIES[j]] = +data[i][PROPERTIES[j]];
+        for (var j=0; j < PROPERTIES_NUM.length; j++) {
+            data[i][PROPERTIES_NUM[j]] = +data[i][PROPERTIES_NUM[j]];
         }
 
         data[i][ROWID] = i;
@@ -704,7 +740,7 @@ function updateChart ( data ) {
         d3.csv(API_URL +
             formatAPIQuery(API_KEY_FORMAT, API_VAL_JSON) +
             formatAPIQuery(API_KEY_TABLE, API_VAL_EXOPLANETS) +
-            formatAPIKey(API_KEY_SELECT) + PROPERTIES.join() +
+            formatAPIKey(API_KEY_SELECT) + PROPERTIES_NUM.join() +
             '&where=pl_kepflag=1', main);
     } else {
         d3.csv('data/planets.csv', main)
