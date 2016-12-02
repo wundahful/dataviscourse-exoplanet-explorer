@@ -298,8 +298,8 @@ function initMap(planetData) {
         .attr('fill', 'darkred')
         .attr('opacity', .4)
         .attr('r', POINT_RAD/2)
-        .classed(CLASS_PLANET_POINT, true)
-        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);
+        .attr('class', function (d) { return CLASS_PLANET_POINT + ' ' + d[ROWID]; }, true)
+        .classed(CLASS_SELECTED, function (d) { return d[ROWID] == SELECTED_DATA[ROWID] });
 
     galacticMap.append('circle')
         .attr('cy', function (d) { return proj([0, 0])[0]; })
@@ -320,9 +320,11 @@ function initMap(planetData) {
 }
 
 function pointHover(data) {
-    d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT) + CLS(data[ROWID]))
-        .classed(CLASS_CHART_HOVER, true)
-        .each(function () { this.parentNode.appendChild(this); });
+    var sel = d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT) + CLS(data[ROWID]))
+        .classed(CLASS_CHART_HOVER, true);
+
+    effervesceSelected(sel)
+
 
 }
 
@@ -330,8 +332,7 @@ function pointClearHover() {
     d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT))
         .classed(CLASS_CHART_HOVER, false);
 
-    d3.selectAll(CLS(CLASS_SELECTED))
-            .each(function () { this.parentNode.appendChild(this); });
+    effervesceSelected(d3.selectAll(CLS(CLASS_SELECTED)));
 
 }
 
@@ -521,9 +522,9 @@ function updateComparison(planetData) {
 
 }
 function initAll(planetData) {
+    SELECTED_DATA = planetData[2136];
     initMap(planetData);
     initChart(planetData);
-    SELECTED_DATA = planetData[2136];
     initComparison(SELECTED_DATA);
 }
 
@@ -587,7 +588,8 @@ function updateChart ( data ) {
       .merge(points)
         .attr('cx', function (d) { return X_SCALES[props[0]](d[props[0]]);} )
         .attr('cy', function (d) { return Y_SCALES[props[1]](d[props[1]]); } )
-        .attr('class', function (d) { return CLASS_PLANET_POINT + ' ' + d[ROWID]; });
+        .attr('class', function (d) { return CLASS_PLANET_POINT + ' ' + d[ROWID]; })
+        .classed(CLASS_SELECTED, function (d) { return d[ROWID] == SELECTED_DATA[ROWID] });
 
 
     points.on('click', clickPlanet)
@@ -600,6 +602,12 @@ function updateChart ( data ) {
             pointClearHover();
             updateComparison(SELECTED_DATA);
         });
+
+    effervesceSelected(d3.selectAll(CLS(CLASS_PLANET_POINT) + CLS(CLASS_SELECTED)));
+}
+
+function effervesceSelected(selection) {
+    selection.each(function () { this.parentNode.appendChild(this); });
 }
 
 function clickPlanet(planetData) {
@@ -607,9 +615,12 @@ function clickPlanet(planetData) {
     SELECTED_DATA = planetData;
     d3.selectAll(CLS(CLASS_PLANET_POINT) + CLS(CLASS_SELECTED))
         .classed(CLASS_SELECTED, false);
-    d3.selectAll(CLS(planetData[ROWID]))
-        .classed(CLASS_SELECTED, true)
-        .each(function () { this.parentNode.appendChild(this); });
+
+    var sel = d3.selectAll(CLS(planetData[ROWID]))
+        .classed(CLASS_SELECTED, true);
+
+    effervesceSelected(sel)
+
 
     updateComparison(SELECTED_DATA);
 }
