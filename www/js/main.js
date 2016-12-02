@@ -7,7 +7,7 @@ var API_URL = 'http://exoplanetarchive.ipac.caltech.edu/cgi-bin/nstedAPI/nph-nst
     API_KEY_FORMAT  = 'format',
     API_KEY_TABLE   = 'table',
     API_KEY_SELECT  = 'select',
-    API_VAL_JSON    = 'json',
+    API_VAL_JSON    = 'csv',
     API_VAL_EXOPLANETS = 'exoplanets';
 
 /*
@@ -23,7 +23,10 @@ var ID_TOKEN = '#',
     ID_COMPARISON = 'planet-comparison',
     ID_BG_GRADIENT = 'gradient-bg',
     ID_BG = 'bg',
-    CLASS_MAP_GRID = 'map_grid';
+    CLASS_MAP_GRID = 'map-grid',
+    CLASS_CHART_HOVER = 'chart-hover',
+    CLASS_CHART_UNHOVERED = 'chart-unhovered'
+    CLASS_PLANET_POINT = 'planet-point';
 
 /*
  * Data Variables
@@ -57,6 +60,24 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     st_m1   ='st_m1',
     st_c1   ='st_c1',
     st_teff = 'st_teff';
+
+var PROPERTIES = [
+    PLANET_RADIUS_JUPITER,
+    PLANET_RADIUS_EARTH,
+    PLANET_MASS_JUPITER,
+    PLANET_MASS_EARTH,
+    PLANET_NAME,
+    PLANET_YEAR_LENGTH,
+    STAR_RADIUS,
+    STAR_CLASS,
+    STAR_COLOR_COUNT,
+    STAR_TEMP,
+    STAR_MASS,
+    STAR_LONG,
+    STAR_LAT,
+    ORBIT_RAD_MAX,
+    ORBIT_ECCENTRICITY
+];
 
 /** Astronomical Constants */
     var SUN_RADIUS = 695700,
@@ -346,8 +367,7 @@ function loadScales(planetData, width, height) {
 
 function initMap(planetData) {
     var galacticMap = d3.select(ID(ID_MAP));
-    console.log(d3.extent(planetData, function (d) {return d[STAR_LONG] }));
-    console.log(d3.extent(planetData, function (d) {return d[STAR_LAT] }));
+
     var width = galacticMap.attr('width'),
         height = galacticMap.attr('height');
 
@@ -358,19 +378,23 @@ function initMap(planetData) {
     var mapPath = d3.geoPath()
         .projection(proj);
 
+    var gridGroup = galacticMap.append('g');
+
     var grat = d3.geoGraticule()
 
-    galacticMap.append('path')
+    gridGroup.append('path')
         .datum(grat)
         .classed(CLASS_MAP_GRID, true   )
         .attr('d', mapPath);
 
-    galacticMap.append('path')
+    gridGroup.append('path')
         .datum(grat.outline)
         .classed(CLASS_MAP_GRID, true   )
         .attr('d', mapPath);
 
-    var points = galacticMap.selectAll('circle')
+    var planetGroup = galacticMap.append('g');
+
+    var points = planetGroup.selectAll('circle')
         .data(planetData)
       .enter()
       .append('circle')
@@ -379,14 +403,44 @@ function initMap(planetData) {
         .attr('fill', 'darkred')
         .attr('opacity', .4)
         .attr('r', POINT_RAD/2)
+        .classed(CLASS_PLANET_POINT, true);
 
     galacticMap.append('circle')
         .attr('cy', function (d) { return proj([0, 0])[0]; })
         .attr('cx', function (d) { return proj([0, 0])[1]; })
         .attr('fill', 'wheat')
-        .attr('r', POINT_RAD)
+        .attr('r', POINT_RAD);
 
+    /** Set Hover */
+    points.on('mouseover', function (d) {
+        this.parentNode.appendChild(this);
+        d3.select(this).classed(CLASS_CHART_HOVER, true);
+        pointHover(d, ID_PLANET_CHART);
+    })
+        .on('mouseleave', function () {
+            d3.select(this).classed(CLASS_CHART_HOVER, false);
+            pointClearHover(ID_PLANET_CHART);
+        })
+        .on('click', function (d) { debugClick(d); updateComparison(d); initOrbital(d); });
 
+}
+
+function pointHover(data, svgID) {
+    console.log(data)
+    d3.select(ID(svgID))
+      .selectAll('circle' + CLS(CLASS_PLANET_POINT))
+      .filter(function (d) { return d[ROWID] == data[ROWID]; })
+        .each(function () {
+            this.parentNode.appendChild(this);
+        })
+        .classed(CLASS_CHART_HOVER, true);
+
+}
+
+function pointClearHover(svgID) {
+    d3.select(ID(svgID))
+      .selectAll('circle')
+        .classed(CLASS_CHART_HOVER, false)
 }
 
 function initChart(planetData) {
@@ -431,11 +485,29 @@ function initChart(planetData) {
     var selectX = d3.select(ID(ID_PLANET_CHART_X)),
         selectY = d3.select(ID(ID_PLANET_CHART_Y));
 
-    selectX.on('change', changeX);
-    selectY.on('change', changeY);
+    selectX.on('change', function() {
+        updateChart(selectionFilter(planetData))
+    });
 
-    updateChart(planetData);
+    selectY.on('change', function () {
+        updateChart(selectionFilter(planetData));
+    });
 
+    updateChart(selectionFilter(planetData));
+
+}
+
+function selectionFilter(data) {
+    var props = getChartSelections();
+    return data.filter(function (d) {
+        return d[props[0]] !== 0 && d[props[1]] !== 0;
+    });
+}
+
+function getChartSelections() {
+    var selX = d3.select(ID(ID_PLANET_CHART_X)).property('value');
+    var selY = d3.select(ID(ID_PLANET_CHART_Y)).property('value');
+    return [selX, selY]
 }
 
 function updateComparison(planetData) {
@@ -504,51 +576,37 @@ function updateComparison(planetData) {
         .attr('x', function (d, i) { return 10 + 200 * i; })
         .attr('dy', '1.2em')
         .text(function (d) { return 'Temperature: ' + d['temp'] + 'K'; });
-
-
 }
 
 function initAll(planetData) {
+    initMap(planetData);
+    initChart(planetData);
     initOrbital(planetData[0]);
     initComparison(planetData[0]);
-    initChart(planetData);
-    initMap(planetData);
 }
 
-function changeX(d) {
-    var sel = d3.select(this);
-    var prop = sel.property('value');
+function changeX() {
+    var prop = getChartSelections()[0];
     d3.selectAll(ID(ID_PLANET_CHART) + ' circle')
         .attr('cx', function (d) { return X_SCALES[prop](d[prop]); })
-        .attr('stroke-width', function (d) { return 1; })
-        .attr('r', function (d) { return POINT_RAD; })
 }
 
-function changeY(d) {
-    var sel = d3.select(this);
-    var prop = sel.property('value');
+function changeY() {
+    var prop = getChartSelections()[1];
     d3.selectAll(ID(ID_PLANET_CHART) + ' circle')
-        .attr('cy', function (d) { return Y_SCALES[prop](d[prop]); })
+        .attr('cy', function (d) { return Y_SCALES[prop](d[prop]); });
 }
 
 function main(error, data) {
-    data = data.filter(function (d) {
-        return d !== null // &&
-            // +d[PLANET_RADIUS_EARTH] !== 0 &&
-            // +d[ORBIT_RAD_MAX] !== 0 &&
-            // +d[ORBIT_ECCENTRICITY] !== 0
-            ;
-    });
-    data = convertDataFormats(data);
-    console.log(data);
-    initAll(data);
+    var planetData = convertDataFormats(data);
+    initAll(planetData);
 }
 
-function initComparison( data ) {
+function initComparison(data) {
     updateComparison(data);
 }
 
-function convertDataFormats (data) {
+function convertDataFormats(data) {
     for (var i =0; i < data.length; i++) {
         data[i][PLANET_RADIUS_EARTH] = +data[i][PLANET_RADIUS_EARTH];
         data[i][PLANET_MASS_EARTH] = +data[i][PLANET_MASS_EARTH];
@@ -560,9 +618,9 @@ function convertDataFormats (data) {
         data[i][STAR_TEMP] = +data[i][STAR_TEMP];
         data[i][ORBIT_RAD_MAX] = +data[i][ORBIT_RAD_MAX];
         data[i][ORBIT_ECCENTRICITY] = +data[i][ORBIT_ECCENTRICITY];
-        data[i][ROWID] = data[i][ROWID]-1;
         data[i][STAR_LONG] = +data[i][STAR_LONG];
         data[i][STAR_LAT] = +data[i][STAR_LAT];
+        data[i][ROWID] = i;
 
     }
     return data
@@ -572,60 +630,51 @@ function updateChart ( data ) {
     /**
      * Generate points
      */
+    console.log(data);
     var planetChart = d3.select(ID(ID_PLANET_CHART));
 
-    var points = planetChart.selectAll('circle')
+    var points = planetChart.selectAll('circle' + CLS(CLASS_PLANET_POINT))
         .data( data );
 
-    points = points.enter()
-        .append('circle')
-        .attr('fill', 'steelblue')
-        .attr('stroke', 'whitesmoke')
-        .merge(points)
-        .attr('stroke-width', function (d) { return 1 })
-        .attr('r', function (d) { return POINT_RAD })
-        .attr('cy', function (d) { return Y_SCALES[ORBIT_RAD_MAX](d[ORBIT_RAD_MAX]); } )
-        .attr('cx', function (d) { return X_SCALES[PLANET_RADIUS_EARTH](d[PLANET_RADIUS_EARTH]);} );
+    var props = getChartSelections();
 
-    points.on('click', function (d) { debugClick(d); updateComparison(d); initOrbital(d); });
+    points.exit().remove();
+
+    points = points.enter()
+      .append('circle')
+        .classed(CLASS_PLANET_POINT, true)
+        .attr('fill', 'steelblue')
+        .attr('r', function (d) { return POINT_RAD })
+      .merge(points)
+        .attr('cx', function (d) { return X_SCALES[props[0]](d[props[0]]);} )
+        .attr('cy', function (d) { return Y_SCALES[props[1]](d[props[1]]); } );
+
+
+    points.on('click', function (d) {
+            debugClick(d); updateComparison(d); initOrbital(d); })
+        .on('mouseenter', function (d) {
+            this.parentNode.appendChild(this);
+            d3.select(this).classed(CLASS_CHART_HOVER, true);
+            pointHover(d, ID_MAP); })
+        .on('mouseleave', function () {
+            d3.select(this).classed(CLASS_CHART_HOVER, false);
+            pointClearHover(ID_MAP);
+        });
 }
 
 /*
  * Anonymous function that automatically runs once this file is loaded
  */
 (function(){
-    var cols = [
-        PLANET_RADIUS_JUPITER,
-        PLANET_RADIUS_EARTH,
-        PLANET_MASS_JUPITER,
-        PLANET_MASS_EARTH,
-        PLANET_NAME,
-        PLANET_YEAR_LENGTH,
-        STAR_RADIUS,
-        STAR_CLASS,
-        STAR_COLOR_COUNT,
-        ORBIT_RAD_MAX,
-        ORBIT_ECCENTRICITY,
-        ROWID,
-        st_umbj,
-        st_bmvj,
-        st_vjmic,
-        st_vjmrc,
-        st_jmh2,
-        st_hmk2,
-        st_jmk2,
-        st_bmy,
-        st_m1,
-        st_c1,
-        st_teff
-    ];
-
+    /** API Query returns different resutls than full table data.
+     *  Just caching data for now
+     */
     var live = false;
     if (live) {
-        d3.json(API_URL +
+        d3.csv(API_URL +
             formatAPIQuery(API_KEY_FORMAT, API_VAL_JSON) +
             formatAPIQuery(API_KEY_TABLE, API_VAL_EXOPLANETS) +
-            formatAPIKey(API_KEY_SELECT) + cols.join() +
+            formatAPIKey(API_KEY_SELECT) + PROPERTIES.join() +
             '&where=pl_kepflag=1', main);
     } else {
         d3.csv('data/planets.csv', main)

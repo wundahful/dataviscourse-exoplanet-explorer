@@ -7,9 +7,23 @@ html {
     color: whitesmoke;
 }
 
-.map_grid {
+.map-grid {
     fill: none;
     stroke: grey;
     stroke-width: 1px;
     opacity: .4;
+}
+
+.chart-hover {
+    fill: white;
+    stroke: white;
+    stroke-width: 1px;
+    opacity: 1;
+}
+
+.chart-unhovered {
+    opacity: .1;
+}
+
+.planet-point {
 }
