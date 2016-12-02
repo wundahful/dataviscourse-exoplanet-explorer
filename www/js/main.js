@@ -528,18 +528,6 @@ function initAll(planetData) {
     initComparison(SELECTED_DATA);
 }
 
-function changeX() {
-    var prop = getChartSelections()[0];
-    d3.selectAll(ID(ID_PLANET_CHART) + ' circle')
-        .attr('cx', function (d) { return X_SCALES[prop](d[prop]); })
-}
-
-function changeY() {
-    var prop = getChartSelections()[1];
-    d3.selectAll(ID(ID_PLANET_CHART) + ' circle')
-        .attr('cy', function (d) { return Y_SCALES[prop](d[prop]); });
-}
-
 function main(error, data) {
     var planetData = convertDataFormats(data);
     initAll(planetData);
