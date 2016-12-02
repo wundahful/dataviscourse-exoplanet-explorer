@@ -13,9 +13,11 @@
     <header>
         <h1>OpenSpace Exoplanet Explorer</h1>
     </header>
+    <svg id='galactic-map' width='700' height='700'>
+    </svg>
+    <svg id='planet-chart' width='700' height='700'>
+    </svg>
     <div class='view'>
-        <svg id="orbital" width='1200' height='900'>
-        </svg>
         <select id="planet-chart-x">
             <option selected value="pl_rade">Radius - Earth</option>
             <option value="pl_radj">Radius - Jupiter</option>
@@ -23,6 +25,7 @@
             <option value="pl_masse">Mass - Earth</option>
             <option value="st_mass">Mass - Star</option>
             <option value="st_teff">Temperature - Star</option>
+            <option value="st_lum">Luminosity - Star</option>
             <option value="pl_orbsmax">Orbit</option>
             <option value="pl_orbeccen">Eccentricity</option>
         </select>
@@ -33,15 +36,14 @@
             <option value="pl_masse">Mass - Earth</option>
             <option value="st_mass">Mass - Star</option>
             <option value="st_teff">Temperature - Star</option>
+            <option value="st_lum">Luminosity - Star</option>
             <option selected value="pl_orbsmax">Orbit</option>
             <option value="pl_orbeccen">Eccentricity</option>
         </select>
         <br/>
         <svg id='planet-comparison' width='1200' height='400'>
         </svg>
-        <svg id='planet-chart' width='400' height='400'>
-        </svg>
-        <svg id='galactic-map' width='700' height='700'>
+        <svg id="orbital" width='1200' height='900'>
         </svg>
     </div>
     <footer>

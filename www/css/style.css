@@ -26,4 +26,11 @@ html {
 }
 
 .planet-point {
+    stroke: whitesmoke;
+    stroke-width: 1px;
+}
+
+.planet-habitable {
+    fill: green;
+    opacity: 1;
 }

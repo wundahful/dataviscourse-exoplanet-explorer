@@ -25,7 +25,8 @@ var ID_TOKEN = '#',
     ID_BG = 'bg',
     CLASS_MAP_GRID = 'map-grid',
     CLASS_CHART_HOVER = 'chart-hover',
-    CLASS_CHART_UNHOVERED = 'chart-unhovered'
+    CLASS_CHART_UNHOVERED = 'chart-unhovered',
+    CLASS_PLANET_HABITABLE = 'planet-habitable',
     CLASS_PLANET_POINT = 'planet-point';
 
 /*
@@ -46,20 +47,13 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     STAR_MASS = 'st_mass',
     STAR_LONG = 'st_glon',
     STAR_LAT = 'st_glat',
+    STAR_LUMINOSITY = 'st_lum',
     ORBIT_RAD_MAX = 'pl_orbsmax',
     ORBIT_ECCENTRICITY = 'pl_orbeccen',
     ROWID = 'rowid',
-    st_umbj ='st_umbj',
-    st_bmvj ='st_bmvj',
-    st_vjmic='st_vjmic',
-    st_vjmrc='st_vjmrc',
-    st_jmh2 ='st_jmh2',
-    st_hmk2 ='st_hmk2',
-    st_jmk2 ='st_jmk2',
-    st_bmy  ='st_bmy',
-    st_m1   ='st_m1',
-    st_c1   ='st_c1',
-    st_teff = 'st_teff';
+    HABITABLE = 'habitable',
+    HABITABLE_ZONE_INNER = 'hzi',
+    HABITABLE_ZONE_OUTER = 'hzo';
 
 var PROPERTIES = [
     PLANET_RADIUS_JUPITER,
@@ -76,12 +70,14 @@ var PROPERTIES = [
     STAR_LONG,
     STAR_LAT,
     ORBIT_RAD_MAX,
+    STAR_LUMINOSITY,
     ORBIT_ECCENTRICITY
 ];
 
 /** Astronomical Constants */
     var SUN_RADIUS = 695700,
     SUN_TEMP = 5800,
+    SUN_LUMINOSITY = 1,
     AU = SUN_RADIUS / 0.00465047,
     KM_AU = 149597871,
     EARTH_RADIUS =  6353,
@@ -89,7 +85,7 @@ var PROPERTIES = [
 
     var COLOR_SCALE = d3.scaleLinear()
         .domain([2400, 3700, 5200, 6000, 7500, 10000, 30000])
-        .range(['SandyBrown', 'NavajoWhite',  'Gold', 'LemonChiffon', 'Azure', 'LightSteelBlue' ])
+        .range(['SandyBrown', 'NavajoWhite',  'Gold', 'LemonChiffon', 'Azure', 'LightSteelBlue' ]);
 
 
 /*
@@ -319,6 +315,11 @@ function loadScales(planetData, width, height) {
     var starTempX = d3.scaleLinear().domain([e[0], SUN_TEMP, e[1]]).range(width3Range);
     var starTempY = d3.scaleLinear().domain([e[0], SUN_TEMP, e[1]]).range(height3Range);
 
+    /** Star Luminosity */
+    e = d3.extent(planetData, function (d) {return d[STAR_LUMINOSITY]; } );
+    var starLumX = d3.scaleLinear().domain([e[0], SUN_LUMINOSITY, e[1]]).range(width3Range);
+    var starLumY = d3.scaleLinear().domain([e[0], SUN_LUMINOSITY, e[1]]).range(height3Range);
+
     /** Orbit Radius */
     e = d3.extent(planetData, function (d) { return d[ORBIT_RAD_MAX] ; } );
     var orbitRadiusX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
@@ -356,6 +357,9 @@ function loadScales(planetData, width, height) {
     X_SCALES[STAR_TEMP] = starTempX;
     Y_SCALES[STAR_TEMP] = starTempY;
 
+    X_SCALES[STAR_LUMINOSITY] = starLumX;
+    Y_SCALES[STAR_LUMINOSITY] = starLumY;
+
     X_SCALES[ORBIT_ECCENTRICITY] = eccScaleX;
     Y_SCALES[ORBIT_ECCENTRICITY] = eccScaleY;
 
@@ -370,6 +374,15 @@ function initMap(planetData) {
 
     var width = galacticMap.attr('width'),
         height = galacticMap.attr('height');
+
+    var gradient = createGradient(galacticMap);
+
+    var background = galacticMap.append('rect')
+        .attr('id', ID_BG)
+        .attr('width', width)
+        .attr('height', height)
+        .style('fill', 'url(' + ID(ID_BG_GRADIENT) + ')');
+
 
     var proj = d3.geoAzimuthalEquidistant()
         .translate([width/2, height/2])
@@ -403,7 +416,9 @@ function initMap(planetData) {
         .attr('fill', 'darkred')
         .attr('opacity', .4)
         .attr('r', POINT_RAD/2)
-        .classed(CLASS_PLANET_POINT, true);
+        .classed(CLASS_PLANET_POINT, true)
+        //.classed(CLASS_PLANET_HABITABLE, function (d) { return d[HABITABLE]});
+
 
     galacticMap.append('circle')
         .attr('cy', function (d) { return proj([0, 0])[0]; })
@@ -426,7 +441,6 @@ function initMap(planetData) {
 }
 
 function pointHover(data, svgID) {
-    console.log(data)
     d3.select(ID(svgID))
       .selectAll('circle' + CLS(CLASS_PLANET_POINT))
       .filter(function (d) { return d[ROWID] == data[ROWID]; })
@@ -608,29 +622,44 @@ function initComparison(data) {
 
 function convertDataFormats(data) {
     for (var i =0; i < data.length; i++) {
-        data[i][PLANET_RADIUS_EARTH] = +data[i][PLANET_RADIUS_EARTH];
-        data[i][PLANET_MASS_EARTH] = +data[i][PLANET_MASS_EARTH];
-        data[i][PLANET_RADIUS_JUPITER] = +data[i][PLANET_RADIUS_JUPITER];
-        data[i][PLANET_MASS_JUPITER] = +data[i][PLANET_MASS_JUPITER];
-        data[i][PLANET_YEAR_LENGTH] = +data[i][PLANET_YEAR_LENGTH];
-        data[i][STAR_RADIUS] = +data[i][STAR_RADIUS];
-        data[i][STAR_MASS] = +data[i][STAR_MASS];
-        data[i][STAR_TEMP] = +data[i][STAR_TEMP];
-        data[i][ORBIT_RAD_MAX] = +data[i][ORBIT_RAD_MAX];
-        data[i][ORBIT_ECCENTRICITY] = +data[i][ORBIT_ECCENTRICITY];
-        data[i][STAR_LONG] = +data[i][STAR_LONG];
-        data[i][STAR_LAT] = +data[i][STAR_LAT];
+        for (var j=0; j < PROPERTIES.length; j++) {
+            data[i][PROPERTIES[j]] = +data[i][PROPERTIES[j]];
+        }
+
         data[i][ROWID] = i;
 
+        /** Add habitable zone information */
+        //var hab = calculateHabitableZone(data[i]);
+        // data[i][HABITABLE] = hab[0];
+        // data[i][HABITABLE_ZONE_INNER] = hab[1];
+        // data[i][HABITABLE_ZONE_OUTER] = hab[2];
     }
     return data
 }
 
+function calculateHabitableZone(d) {
+    if (d[STAR_LUMINOSITY] == 0 ||
+        d[ORBIT_RAD_MAX] == 0) {
+        return [false, 0, 0]
+    }
+
+    var lSun = 3.846e+26;
+    var L = Math.pow(10, d[STAR_LUMINOSITY]);
+
+
+    var orb = d[ORBIT_RAD_MAX]
+    var ecc = orb * Math.sqrt(1-d[ORBIT_ECCENTRICITY]);
+    var inner = Math.sqrt(L/1.1);
+    var outer = Math.sqrt(L/0.53);
+    var habitable = (inner <= orb && orb <= d[outer]) ? true : false;
+
+    console.log(L, d[STAR_LUMINOSITY], habitable, inner, outer);
+    return [habitable, inner, outer]
+}
 function updateChart ( data ) {
     /**
      * Generate points
      */
-    console.log(data);
     var planetChart = d3.select(ID(ID_PLANET_CHART));
 
     var points = planetChart.selectAll('circle' + CLS(CLASS_PLANET_POINT))
@@ -643,6 +672,7 @@ function updateChart ( data ) {
     points = points.enter()
       .append('circle')
         .classed(CLASS_PLANET_POINT, true)
+        //.classed(CLASS_PLANET_HABITABLE, function (d) { return d[HABITABLE]})
         .attr('fill', 'steelblue')
         .attr('r', function (d) { return POINT_RAD })
       .merge(points)
