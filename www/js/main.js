@@ -23,6 +23,12 @@ var ID_TOKEN = '#',
     ID_COMPARISON = 'planet-comparison',
     ID_BG_GRADIENT = 'gradient-bg',
     ID_BG = 'bg',
+    ID_SYMBOL_Q = 'symbol-q',
+    ID_SYMBOL_EARTH = 'symbol-earth',
+    ID_SYMBOL_SUN = 'symbol-sun',
+    ID_SYMBOL_PLANET = 'symbol-planet',
+    ID_SYMBOL_STAR = 'symbol-star',
+    ID_STAR_GRAD_START = 'star-grad-start',
     CLASS_MAP_GRID = 'map-grid',
     CLASS_CHART_HOVER = 'chart-hover',
     CLASS_CHART_UNHOVERED = 'chart-unhovered',
@@ -533,8 +539,13 @@ function updateComparison(planetData) {
     var compText = comparison.select('g' + CLS(CLASS_COMPARISON_TEXT));
     var compIMG = comparison.select('g' + CLS(CLASS_COMPARISON_TEXT));
 
+    var colWidth = comparison.attr('width')/4,
+        colHeight = comparison.attr('height');
+
     var rad = 'radius';
     var r = 10;
+    var pad = 20;
+    var maxR = colWidth/2 - pad;
     var r2 = 10/EARTH_RADIUS;
     var TYPE_P = 'P',
         TYPE_S = 'S';
@@ -545,28 +556,36 @@ function updateComparison(planetData) {
             'orbit_rad' : KM_AU,
             'mass' : 1,
             'temp' : 0,
-            'type' : TYPE_P
+            'type' : TYPE_P,
+            'r': planetData[PLANET_RADIUS_EARTH] < 1 ? maxR : maxR/planetData[PLANET_RADIUS_EARTH],
+            'img': ID_SYMBOL_EARTH
         },
         {   'name' : planetData[PLANET_NAME],
             'radius' : Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH]),
             'orbit_rad' : Math.round(KM_AU * planetData[ORBIT_RAD_MAX]),
             'mass' : planetData[PLANET_MASS_EARTH],
             'temp' : 0,
-            'type' : TYPE_P
+            'type' : TYPE_P,
+            'r': planetData[PLANET_RADIUS_EARTH] > 1 ? maxR : maxR * planetData[PLANET_RADIUS_EARTH],
+            'img': ID_SYMBOL_PLANET
         },
         {   'name' : 'Sun',
             'radius' : SUN_RADIUS,
             'orbit_rad' : KM_AU,
             'mass' : 1,
             'temp' : SUN_TEMP,
-            'type' : TYPE_S
+            'type' : TYPE_S,
+            'r': planetData[STAR_RADIUS] < 1 ? maxR : maxR/planetData[STAR_RADIUS],
+            'img': ID_SYMBOL_SUN
         },
         {   'name' : planetData[STAR_NAME],
             'radius' : Math.round(SUN_RADIUS * planetData[STAR_RADIUS]),
             'orbit_rad' : KM_AU,
             'mass' : planetData[STAR_MASS],
             'temp' : planetData[STAR_TEMP],
-            'type' : TYPE_S
+            'type' : TYPE_S,
+            'r': planetData[STAR_RADIUS] > 1 ? maxR : maxR * planetData[STAR_RADIUS],
+            'img': ID_SYMBOL_STAR
         }
     ];
 
@@ -584,40 +603,49 @@ function updateComparison(planetData) {
 
     stats
       .append('tspan')
-        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('x', function (d, i) { return colWidth * i; })
         .attr('dy', '1.2em')
         .text(function (d) { return 'Name: ' + d['name']; } )
       .append('tspan')
-        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('x', function (d, i) { return colWidth * i; })
         .attr('dy', '1.2em')
         .text(function (d) { return 'Radius: ' + d[rad] + ' km'; } )
       .append('tspan')
-        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('x', function (d, i) { return colWidth * i; })
         .attr('dy', '1.2em')
         .text(function (d) { return 'Orbital Radius: ' + d['orbit_rad'] + ' km'; })
       .append('tspan')
-        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('x', function (d, i) { return colWidth * i; })
         .attr('dy', '1.2em')
         .text(function (d) { return 'Mass: ' + d['mass'] ; })
       .append('tspan')
-        .attr('x', function (d, i) { return 10 + 200 * i; })
+        .attr('x', function (d, i) { return colWidth * i; })
         .attr('dy', '1.2em')
         .text(function (d) { return 'Temperature: ' + d['temp'] + 'K'; });
 
     /** The planet/stars */
     compIMG.selectAll('circle').remove();
+    compIMG.selectAll('image').remove();
+    compIMG.selectAll('use').remove();
 
     var planets = compIMG.selectAll('circle')
         .data(hudData);
 
+
     planets = planets.enter()
-      .append('circle')
-        .attr('fill', 'whitesmoke')
-        .attr('cx', function (d, i) { return r + 10 + 200 * i; })
-        .attr('cy', function (d, i) { return 150; })
-        .attr('r', function (d) {return d['type'] == TYPE_P ? r * d[rad]/EARTH_RADIUS : r * d[rad]/SUN_RADIUS } )
+      .append('svg:use')
+        .attr('x', function (d, i) { return colWidth/4 + i * colWidth; })
+        .attr('y', function (d, i) { return colHeight/2; })
+        .attr('width', function (d) { return d['r'] !== 0 ? d['r'] : colWidth/5; })
+        .attr('height', function (d) { return d['r'] !== 0 ? d['r'] : colWidth/5; })
+        .attr('xlink:href', function (d) { return d['r'] != 0 ? ID(d['img']) : ID(ID_SYMBOL_Q); })
       .merge(planets);
 
+    d3.select(ID(ID_STAR_GRAD_START))
+        .attr('style', function (d) {
+            console.log(this, COLOR_SCALE(planetData[STAR_TEMP]), COLOR_SCALE(planetData[STAR_TEMP]).toString());
+            return 'stop-color:' + COLOR_SCALE(planetData[STAR_TEMP])
+        })
 
 
 }
@@ -692,6 +720,7 @@ function calculateHabitableZone(d) {
     console.log(L, d[STAR_LUMINOSITY], habitable, inner, outer);
     return [habitable, inner, outer]
 }
+
 function updateChart ( data ) {
     /**
      * Generate points

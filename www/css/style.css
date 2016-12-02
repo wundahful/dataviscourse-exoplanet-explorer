@@ -1,5 +1,7 @@
 svg {
-    border: black thin solid;
+    padding: 0px;
+    margin: 0px;
+    display:inline-block;
 }
 
 html {
@@ -33,4 +35,8 @@ html {
 .planet-habitable {
     fill: green;
     opacity: 1;
+}
+
+.planet-unknown {
+
 }
