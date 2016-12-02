@@ -34,7 +34,8 @@ var ID_TOKEN = '#',
     CLASS_PLANET_HABITABLE = 'planet-habitable',
     CLASS_PLANET_POINT = 'planet-point',
     CLASS_COMPARISON_TEXT = 'comp-text',
-    CLASS_COMPARISON_IMAGES = 'comp-img';
+    CLASS_COMPARISON_IMAGES = 'comp-img',
+    CLASS_ROW_PREFIX = 'row-';
 
 /*
  * Data Variables
@@ -82,6 +83,8 @@ var PROPERTIES_STR = [
     PLANET_NAME,
     STAR_CLASS,
 ];
+
+var SELECTED_DATA;
 
 /** Astronomical Constants */
     var SUN_RADIUS = 695700,
@@ -311,13 +314,14 @@ function initMap(planetData) {
         .attr('r', POINT_RAD);
 
     /** Set Hover */
-    points.on('click', function (d) { debugClick(d); updateComparison(d); })
+    points.on('click', function (d) { debugClick(d); SELECTED_DATA = d; updateComparison(SELECTED_DATA); })
         .on('mouseover', function (d) {
             pointHover(d);
             updateComparison(d);
         })
         .on('mouseout', function () {
             pointClearHover();
+            updateComparison(SELECTED_DATA)
         });
 }
 
@@ -521,7 +525,8 @@ function updateComparison(planetData) {
 function initAll(planetData) {
     initMap(planetData);
     initChart(planetData);
-    initComparison(planetData[2136]);
+    SELECTED_DATA = planetData[2136];
+    initComparison(SELECTED_DATA);
 }
 
 function changeX() {
@@ -558,7 +563,7 @@ function convertDataFormats(data) {
             data[i][PROPERTIES_NUM[j]] = +data[i][PROPERTIES_NUM[j]];
         }
 
-        data[i][ROWID] = 'row_' + i;
+        data[i][ROWID] = CLASS_ROW_PREFIX + i;
 
         /** Add habitable zone information */
         //var hab = calculateHabitableZone(data[i]);
@@ -603,18 +608,17 @@ function updateChart ( data ) {
 
     points = points.enter()
       .append('circle')
-        .classed(CLASS_PLANET_POINT, true)
         //.classed(CLASS_PLANET_HABITABLE, function (d) { return d[HABITABLE]})
         .attr('fill', 'steelblue')
         .attr('r', function (d) { return POINT_RAD })
       .merge(points)
         .attr('cx', function (d) { return X_SCALES[props[0]](d[props[0]]);} )
         .attr('cy', function (d) { return Y_SCALES[props[1]](d[props[1]]); } )
-        .attr('class', function (d) { return d3.select(this).attr('class') + " " + d[ROWID]; }, true);
+        .attr('class', function (d) { return CLASS_PLANET_POINT + ' ' + d[ROWID]; });
 
 
     points.on('click', function (d) {
-            debugClick(d); updateComparison(d); })
+            debugClick(d); SELECTED_DATA = d; updateComparison(SELECTED_DATA); })
         .on('mouseover', function (d) {
             pointHover(d);
             updateComparison(d)
@@ -622,6 +626,7 @@ function updateChart ( data ) {
 
         .on('mouseout', function () {
             pointClearHover();
+            updateComparison(SELECTED_DATA);
         });
 }
 
