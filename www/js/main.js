@@ -327,14 +327,13 @@ function initMap(planetData) {
         .attr('r', POINT_RAD);
 
     /** Set Hover */
-    points.on('click', function (d) { debugClick(d); updateComparison(d); initOrbital(d); })
+    points.on('click', function (d) { debugClick(d); updateComparison(d); })
         .on('mouseover', function (d) {
             pointHover(d);
             updateComparison(d);
         })
         .on('mouseout', function () {
-            d3.select(this).classed(CLASS_CHART_HOVER, false);
-            pointClearHover(ID_PLANET_CHART);
+            pointClearHover();
         });
 }
 
@@ -345,9 +344,8 @@ function pointHover(data) {
 
 }
 
-function pointClearHover(svgID) {
-    d3.select(ID(svgID))
-      .selectAll('circle')
+function pointClearHover() {
+    d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT))
         .classed(CLASS_CHART_HOVER, false)
 }
 
@@ -539,7 +537,7 @@ function updateComparison(planetData) {
 function initAll(planetData) {
     initMap(planetData);
     initChart(planetData);
-    initComparison(planetData[0]);
+    initComparison(planetData[2136]);
 }
 
 function changeX() {
@@ -632,15 +630,14 @@ function updateChart ( data ) {
 
 
     points.on('click', function (d) {
-            debugClick(d); updateComparison(d); initOrbital(d); })
+            debugClick(d); updateComparison(d); })
         .on('mouseover', function (d) {
             pointHover(d);
             updateComparison(d)
         })
 
         .on('mouseout', function () {
-            d3.select(this).classed(CLASS_CHART_HOVER, false);
-            pointClearHover(ID_MAP);
+            pointClearHover();
         });
 }
 
