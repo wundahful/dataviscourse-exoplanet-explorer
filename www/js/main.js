@@ -189,16 +189,6 @@ function loadScales(planetData, width, height) {
     var earthMassX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
     var earthMassY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
 
-    /** Jupiter Radius */
-    e = d3.extent(planetData, function (d) {return d[PLANET_RADIUS_JUPITER]; });
-    var jupiterRadiusX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
-    var jupiterRadiusY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
-
-    /** Jupiter Mass */
-    e = d3.extent(planetData, function (d) {return d[PLANET_MASS_JUPITER]; } );
-    var jupiterMassX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
-    var jupiterMassY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
-
     /** Star Mass */
     e = d3.extent(planetData, function (d) {return d[STAR_MASS]; } );
     var starMassX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
@@ -238,17 +228,11 @@ function loadScales(planetData, width, height) {
     X_SCALES[PLANET_RADIUS_EARTH] = earthRadiusX;
     Y_SCALES[PLANET_RADIUS_EARTH] = earthRadiusY;
 
-    X_SCALES[PLANET_RADIUS_JUPITER] = jupiterRadiusX;
-    Y_SCALES[PLANET_RADIUS_JUPITER] = jupiterRadiusY;
-
     X_SCALES[STAR_RADIUS] = starRadiusX;
     Y_SCALES[STAR_RADIUS] = starRadiusY;
 
     X_SCALES[PLANET_MASS_EARTH] = earthMassX;
     Y_SCALES[PLANET_MASS_EARTH] = earthMassY;
-
-    X_SCALES[PLANET_MASS_JUPITER] = jupiterMassX;
-    Y_SCALES[PLANET_MASS_JUPITER] = jupiterMassY;
 
     X_SCALES[STAR_MASS] = starMassX;
     Y_SCALES[STAR_MASS] = starMassY;
