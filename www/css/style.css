@@ -1,8 +1,44 @@
 svg {
-    border: black thin solid;
+    padding: 0px;
+    margin: 0px;
+    display:inline-block;
 }
 
 html {
     background-color: dimgrey;
     color: whitesmoke;
+}
+
+.map-grid {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1px;
+    opacity: 0.4;
+}
+
+.chart-hover {
+    fill: white;
+    stroke: white;
+    stroke-width: 1px;
+    opacity: 1;
+}
+
+.planet-point {
+    opacity: 0.85;
+}
+
+.planet-habitable {
+    fill: green;
+    opacity: 1;
+}
+
+.planet-unknown {
+
+}
+
+.selected {
+    fill: #FF2222;
+    opacity: 1;
+    stroke: #FFFFCC;
+    stroke-width: 1.5px;
 }
