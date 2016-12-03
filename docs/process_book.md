@@ -72,6 +72,38 @@ The composite design takes the Vitruvian Planet and integrates it into the Heads
 - Filtering connected to OpenSpace software's camera frustum
 
 +++
+
+# Summary
+## Implementation Details
+The final iteration resulted in a slimmed down, more focused product. The spherical galactic map, centered on our solar system, is now shares the primary focus with the Vitruvian Planet chart. They are color coordinated and are linked together with brushing and selection highlighting: both hovering over and clicking a data point will activate a marker in each.
+
+I chose a 2D color scale for the Vitruvian chart that radiates from the center. Since data in displayed in relation to Earth/the Sun, the centeral data is most similar, and has been labeled green. As points diverge, they pass through yellow to indicate less Earthlike, and the greatest differences in values are filled red. Since "Earthlike" is a spectrum and not a classification, a gradation seemed like the best choice to help show trends.
+
+These colors were also linked to the galactic map, which gives a redundant position cue to go along with the hovering and selection. It also makes it possible to see if there are any interesting clusterings of potential Earthlike planets. As you interact with the map and cycle through the data accessible in the selectors above the chart, it's easy to see that many of the objects are rather similar. Indeed, there's quite a cluster of green in the Kepler Survey, but there are a surprising number scattered throughout the universe that we've confirmed meet some of the conditions. (Actually, both results should be expected: Kepler since it's the most most studied, and the noisy rest of the universe due to probability).
+
+The orbit comparison was removed to hone in on a presentation. Rather than spend too much real estate on the small context of orbit comparisons, a galactic map and the Vitruvian view are now front and center, while the heads up display information is still at the bottom. In the heads up display, the planet is compared to Earth, and its star compared to the sun. Name, size,  mass in relation to our analog system, orbit, and apparent temperature are all presented. The larger of the objects is fit to a column width, while the smaller will scale. The HUD updates interactively with hovering, and will store the last clicked dataset in non-active regions. The addition of this level of interactivity was very effective in creating a more engaging experience; the simple and quick feedback loop allows you to peruse the chart systematically or the map sporadically.
+
+## Design Choices & Challenges
+The biggest point from my critique, TA session, and all who saw the intermediate progress was that context was missing: the orbits were nice, but for exploration people were more interested in where things where and what the other physical relationships were. On to of that, there was a challenge of showing the extreme scales in a coherent way. I decided to nix the idea all together and focus on a more data driven approach and I think the project is better for it.
+
+Furthermore, the habitable zones have been left out of this implementation. It was trickier to derive from the data than I had anticipated, and I'll need to do more research to understand exactly which data is useful in the derivation.
+
+I'm please with the interactivity of the hovering functionality in lieu of animation. It likely would have been very distracting in this more informational context.
+
+
+I noticed late in the game that the API calls don't actually pull the entire data set, but merely the Kepler survey data. Since this discovery came late in the process and I hadn't been able to rectify it, I'm continuing to use my cached version of the full dataset in the deployment. It will need to be periodically updated, but its the most interesting dataset I've been able to aggregate.
+
+
+## Continuing Improvements
+The styling could still use some work. I thought it was important to have Earth look relatively proper, but doing so against the more illustrative and simple elements threw off the balance a bit. I'll need to be choosing a different visual style for future versions.
+
+I didn't get around to working on the camera frustum system. The hovering and brushing makes up for it a little, but an integrated Phase II is yet to come.
+
++++
+
+# Supplement
+
++++
 # Project Schedule
 ### Week 1: October 24 - October 30
 - Proposal
@@ -128,13 +160,3 @@ And from bl.ocks.org's reference pages, followed through to Jonathan Corum’s 2
 
 While it's disappointing to find that other project contain some major aspects of what I'm trying to achieve, there's still definitely room for improvement and more compelling interactivity. I'll need to focus more on the integration aspect with OpenSpace, and I'd like to make some adaptations so that this doesn't become a simple re-implementation project. The light transit curve visualization could be a worthwhile addition.
 
-+++
-
-# Summary
-
-## Implemtation Details
-
-## Design Choices & Challenges
-
-## Continuing Improvements
-The I noticed late in the game that the API calls don't actually pull the entire data set, but merely the Kepler survey data. Since this discovery came late in the process and I hadn't been able to rectify it, I'm continuing to use my cached version of the full dataset in the deployment.
