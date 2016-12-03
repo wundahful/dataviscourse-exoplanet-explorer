@@ -24,11 +24,7 @@ html {
 }
 
 .planet-point {
-    /*stroke: rgba(10, 10, 10, .2);
-    stroke-width: .5px;
-    /*fill: #AC6C82;*/
     opacity: 0.85;
-
 }
 
 .planet-habitable {
@@ -41,7 +37,7 @@ html {
 }
 
 .selected {
-    fill: #FFAA5C ;
+    fill: #FF2222;
     opacity: 1;
     stroke: #FFFFCC;
     stroke-width: 1.5px;

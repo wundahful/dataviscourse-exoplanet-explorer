@@ -45,6 +45,7 @@ var PLANET_RADIUS_JUPITER = 'pl_radj',
     PLANET_RADIUS_EARTH = 'pl_rade',
     PLANET_MASS_JUPITER = 'pl_massj',
     PLANET_MASS_EARTH = 'pl_masse',
+    PLANET_TEMP = 'pl_eqt',
     PLANET_NAME = 'pl_name',
     PLANET_LETTER = 'pl_letter',
     PLANET_YEAR_LENGTH = 'pl_orbper',
@@ -74,7 +75,8 @@ var PROPERTIES_NUM = [
     STAR_LAT,
     ORBIT_RAD_MAX,
     STAR_LUMINOSITY,
-    ORBIT_ECCENTRICITY
+    ORBIT_ECCENTRICITY,
+    PLANET_TEMP
 ];
 
 var PROPERTIES_STR = [
@@ -93,6 +95,7 @@ var SELECTED_DATA;
 /** Astronomical Constants */
     var SUN_RADIUS = 695700,
     SUN_TEMP = 5800,
+    EARTH_TEMP = 252,
     SUN_LUMINOSITY = 1,
     AU = SUN_RADIUS / 0.00465047,
     KM_AU = 149597871,
@@ -107,7 +110,7 @@ var SELECTED_DATA;
 /*
  * Style Variables
  */
-var POINT_RAD = 5;
+var POINT_RAD = 6;
 
 var X_SCALES = {},
     Y_SCALES = {};
@@ -214,6 +217,11 @@ function loadScales(planetData, width, height) {
     var starRadiusX = d3.scaleLinear().domain([e[0], 1, e[1]]).range(width3Range);
     var starRadiusY = d3.scaleLinear().domain([e[0], 1, e[1]]).range(height3Range);
 
+    /** Planet Temperature */
+    e = d3.extent(planetData, function (d) {return d[PLANET_TEMP]; } );
+    var planetTempX = d3.scaleLinear().domain([e[0], EARTH_TEMP, e[1]]).range(width3Range);
+    var planetTempY = d3.scaleLinear().domain([e[0], EARTH_TEMP, e[1]]).range(height3Range);
+
     /** Star Temperature */
     e = d3.extent(planetData, function (d) {return d[STAR_TEMP]; } );
     var starTempX = d3.scaleLinear().domain([e[0], SUN_TEMP, e[1]]).range(width3Range);
@@ -233,12 +241,6 @@ function loadScales(planetData, width, height) {
     e = d3.extent(planetData, function (d) {return d[ORBIT_ECCENTRICITY]; } );
     var eccScaleX = d3.scaleLinear().domain([e[0], EARTH_ECC, e[1]]).range(width3Range);
     var eccScaleY = d3.scaleLinear().domain([e[0], EARTH_ECC, e[1]]).range(height3Range);
-
-
-    var planetCountScale = d3.scaleLinear()
-        .domain([0, planetData.length])
-        .range(height2Range);
-
 
     X_SCALES[PLANET_RADIUS_EARTH] = earthRadiusX;
     Y_SCALES[PLANET_RADIUS_EARTH] = earthRadiusY;
@@ -264,7 +266,8 @@ function loadScales(planetData, width, height) {
     X_SCALES[ORBIT_RAD_MAX] = orbitRadiusX;
     Y_SCALES[ORBIT_RAD_MAX] = orbitRadiusY;
 
-    Y_SCALES['count'] = planetCountScale;
+    X_SCALES[PLANET_TEMP] = planetTempX;
+    Y_SCALES[PLANET_TEMP] = planetTempY;
 
     genColorScales();
 }
@@ -282,14 +285,6 @@ function initMap(planetData) {
         .attr('width', width)
         .attr('height', height)
         .style('fill', 'url(' + ID(ID_BG_GRADIENT) + ')');
-
-    galacticMap.append('circle')
-        .attr('cy', function (d) { return GALACTIC_PROJECTION([0, 0])[0]; })
-        .attr('cx', function (d) { return GALACTIC_PROJECTION([0, 0])[1]; })
-        .attr('fill', COLOR_SCALE(SUN_TEMP))
-        .attr('r', POINT_RAD*7)
-        .attr('opacity', 0.4);
-
 
     var mapPath = d3.geoPath()
         .projection(GALACTIC_PROJECTION);
@@ -309,6 +304,27 @@ function initMap(planetData) {
         .classed(CLASS_MAP_GRID, true   )
         .attr('d', mapPath);
 
+    /** Create axis */
+    gridGroup.append('path')
+        .attr('stroke', 'lightgray')
+        .attr('stroke-width', 2)
+        .attr('fill', 'none')
+        .attr('opacity', .5)
+        .attr('d',
+            'M 0 ' + height/2 +
+            'H ' + width +
+            'M  ' + width/2 + ' 0' +
+            'V ' + height +
+            'Z'
+        );
+
+    galacticMap.append('circle')
+        .attr('r', POINT_RAD)
+        .attr('cx', function () { return GALACTIC_PROJECTION([0, 0])[0]; })
+        .attr('cy', function () { return GALACTIC_PROJECTION([0, 0])[1]; })
+        .attr('opacity', 0.7)
+        .attr('fill', 'black');
+
     var planetGroup = galacticMap.append('g')
         .attr('id', ID_MAP_PLANETS);
 
@@ -327,14 +343,14 @@ function fillMapPoints() {
         })
 }
 
+
 function pointHover(data) {
     var sel = d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT) + CLS(data[ROWID]))
         .classed(CLASS_CHART_HOVER, true);
 
     effervesceSelected(sel)
-
-
 }
+
 
 function pointClearHover() {
     d3.selectAll('svg circle' + CLS(CLASS_PLANET_POINT))
@@ -343,6 +359,7 @@ function pointClearHover() {
     effervesceSelected(d3.selectAll(CLS(CLASS_SELECTED)));
 
 }
+
 
 function initChart(planetData) {
     /**
@@ -373,6 +390,7 @@ function initChart(planetData) {
         .attr('stroke', 'lightgray')
         .attr('stroke-width', 2)
         .attr('fill', 'none')
+        .attr('opacity', .5)
         .attr('d',
             'M 0 ' + height/2 +
             'H ' + width +
@@ -441,6 +459,7 @@ function updateMap(planetData) {
         });
 }
 
+
 function selectionFilter(data) {
     var props = getChartSelections();
     return data.filter(function (d) {
@@ -470,23 +489,28 @@ function updateComparison(planetData) {
     var maxR = colWidth - pad;
     var r2 = 10/EARTH_RADIUS;
     var TYPE_P = 'P',
-        TYPE_S = 'S';
+        TYPE_S = 'S',
+        UNKNOWN = 'Unknown';
+
+    var valTest = function (val) {
+        return val ? val : UNKNOWN;
+    }
 
     var hudData = [
         {   'name' : 'Earth',
             'radius' : EARTH_RADIUS,
             'orbit_rad' : KM_AU,
             'mass' : 1,
-            'temp' : 0,
+            'temp' : EARTH_TEMP,
             'type' : TYPE_P,
             'r': planetData[PLANET_RADIUS_EARTH] < 1 ? maxR : maxR/planetData[PLANET_RADIUS_EARTH],
             'img': ID_SYMBOL_EARTH
         },
         {   'name' : planetData[PLANET_NAME],
-            'radius' : Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH]),
-            'orbit_rad' : Math.round(KM_AU * planetData[ORBIT_RAD_MAX]),
-            'mass' : planetData[PLANET_MASS_EARTH],
-            'temp' : 0,
+            'radius' : valTest(Math.round(EARTH_RADIUS * planetData[PLANET_RADIUS_EARTH])),
+            'orbit_rad' : valTest(Math.round(KM_AU * planetData[ORBIT_RAD_MAX])),
+            'mass' : valTest(planetData[PLANET_MASS_EARTH]),
+            'temp' : valTest(planetData[PLANET_TEMP]),
             'type' : TYPE_P,
             'r': planetData[PLANET_RADIUS_EARTH] > 1 ? maxR : maxR * planetData[PLANET_RADIUS_EARTH],
             'img': ID_SYMBOL_PLANET
@@ -503,8 +527,8 @@ function updateComparison(planetData) {
         {   'name' : planetData[STAR_NAME],
             'radius' : Math.round(SUN_RADIUS * planetData[STAR_RADIUS]),
             'orbit_rad' : KM_AU,
-            'mass' : planetData[STAR_MASS],
-            'temp' : planetData[STAR_TEMP],
+            'mass' : valTest(planetData[STAR_MASS]),
+            'temp' : valTest(planetData[STAR_TEMP]),
             'type' : TYPE_S,
             'r': planetData[STAR_RADIUS] > 1 ? maxR : maxR * planetData[STAR_RADIUS],
             'img': ID_SYMBOL_STAR
@@ -546,11 +570,9 @@ function updateComparison(planetData) {
         .text(function (d) { return 'Temperature: ' + d['temp'] + 'K'; });
 
     /** The planet/stars */
-    compIMG.selectAll('circle').remove();
-    compIMG.selectAll('image').remove();
     compIMG.selectAll('use').remove();
 
-    var planets = compIMG.selectAll('circle')
+    var planets = compIMG.selectAll('use')
         .data(hudData);
 
 
@@ -575,7 +597,7 @@ function updateComparison(planetData) {
 
 }
 function initAll(planetData) {
-    SELECTED_DATA = planetData[2136];
+    SELECTED_DATA = planetData[846];
     initChart(planetData);
     initMap(planetData);
     initComparison(SELECTED_DATA);
@@ -691,7 +713,7 @@ function getColor(x, y) {
 function genColorScales() {
     var size = d3.select(ID(ID_PLANET_CHART)).attr('width');
 
-    var targetSize = size/3.5,
+    var targetSize = size/6,
         half = size/2;
     var dom = [0, half-targetSize, half, half+targetSize, size],
         ran = [COLOR_OUTER, COLOR_INNER, COLOR_CENTER, COLOR_INNER, COLOR_OUTER];
