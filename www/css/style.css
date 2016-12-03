@@ -13,7 +13,7 @@ html {
     fill: none;
     stroke: grey;
     stroke-width: 1px;
-    opacity: .4;
+    opacity: 0.4;
 }
 
 .chart-hover {
@@ -23,14 +23,12 @@ html {
     opacity: 1;
 }
 
-.chart-unhovered {
-    opacity: .1;
-}
-
 .planet-point {
-    stroke: rgba(10, 10, 10, .2);
+    /*stroke: rgba(10, 10, 10, .2);
     stroke-width: .5px;
     /*fill: #AC6C82;*/
+    opacity: 0.85;
+
 }
 
 .planet-habitable {

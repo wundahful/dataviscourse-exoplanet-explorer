@@ -19,6 +19,8 @@ var ID_TOKEN = '#',
     ID_PLANET_CHART_X = 'planet-chart-x',
     ID_PLANET_CHART_Y = 'planet-chart-y',
     ID_MAP = 'galactic-map',
+    ID_MAP_GRID = 'galactic-grid',
+    ID_MAP_PLANETS = 'galactic-planets',
     ID_COMPARISON = 'planet-comparison',
     ID_BG_GRADIENT = 'gradient-bg',
     ID_BG = 'bg',
@@ -80,8 +82,12 @@ var PROPERTIES_STR = [
     STAR_CLASS,
 ];
 
-var COLOR_SCALE_2D, COLOR_SCALE_X, COLOR_SCALE_Y;
+var COLOR_OUTER = '#522222',
+    COLOR_INNER = '#D9B227',
+    COLOR_CENTER = '#06914C',
+    COLOR_UNKNOWN = COLOR_OUTER;
 
+var COLOR_SCALE_2D, COLOR_SCALE_X, COLOR_SCALE_Y;
 var SELECTED_DATA;
 
 /** Astronomical Constants */
@@ -94,9 +100,9 @@ var SELECTED_DATA;
     EARTH_ECC = 0.0167;
 
     var COLOR_SCALE = d3.scaleLinear()
-        .domain([2400, 3700, 5200, 6000, 7500, 10000, 30000])
-        .range(['SandyBrown', 'NavajoWhite',  'Gold', 'LemonChiffon', 'Azure', 'LightSteelBlue' ]);
-
+        .domain([0,         2400,       4000,       5500,       6000,       7500,           10500,      30000])
+        .range(['Black',    'Coral',    'Gold',     '#DDBA4B',  '#F2D16D',  'LightBlue',    'SkyBlue',  'DeepSkyBlue' ])
+        .interpolate(d3.interpolateLab);
 
 /*
  * Style Variables
@@ -105,6 +111,14 @@ var POINT_RAD = 5;
 
 var X_SCALES = {},
     Y_SCALES = {};
+
+var GALACTIC_PROJECTION = d3.geoAzimuthalEquidistant()
+    .translate([
+        d3.select(ID(ID_MAP)).attr('width')/2,
+        d3.select(ID(ID_MAP)).attr('height')/2])
+    .scale(100)
+
+
 /**
  * Formats key string
  * @param key
@@ -269,17 +283,21 @@ function initMap(planetData) {
         .attr('height', height)
         .style('fill', 'url(' + ID(ID_BG_GRADIENT) + ')');
 
+    galacticMap.append('circle')
+        .attr('cy', function (d) { return GALACTIC_PROJECTION([0, 0])[0]; })
+        .attr('cx', function (d) { return GALACTIC_PROJECTION([0, 0])[1]; })
+        .attr('fill', COLOR_SCALE(SUN_TEMP))
+        .attr('r', POINT_RAD*7)
+        .attr('opacity', 0.4);
 
-    var proj = d3.geoAzimuthalEquidistant()
-        .translate([width/2, height/2])
-        .scale(100)
 
     var mapPath = d3.geoPath()
-        .projection(proj);
+        .projection(GALACTIC_PROJECTION);
 
-    var gridGroup = galacticMap.append('g');
+    var gridGroup = galacticMap.append('g')
+        .attr('id', ID_MAP_GRID);
 
-    var grat = d3.geoGraticule()
+    var grat = d3.geoGraticule();
 
     gridGroup.append('path')
         .datum(grat)
@@ -291,36 +309,22 @@ function initMap(planetData) {
         .classed(CLASS_MAP_GRID, true   )
         .attr('d', mapPath);
 
-    var planetGroup = galacticMap.append('g');
+    var planetGroup = galacticMap.append('g')
+        .attr('id', ID_MAP_PLANETS);
 
-    var points = planetGroup.selectAll('circle')
-        .data(planetData)
-      .enter()
-      .append('circle')
-        .attr('cx', function (d) { return proj([d[STAR_LAT], d[STAR_LONG]])[0]; })
-        .attr('cy', function (d) { return proj([d[STAR_LAT], d[STAR_LONG]])[1]; })
-        .attr('fill', 'darkred')
-        .attr('opacity', .4)
-        .attr('r', POINT_RAD/2)
-        .attr('class', function (d) { return CLASS_PLANET_POINT + ' ' + d[ROWID]; }, true)
-        .classed(CLASS_SELECTED, function (d) { return d[ROWID] == SELECTED_DATA[ROWID] });
+    updateMap(planetData);
+}
 
-    galacticMap.append('circle')
-        .attr('cy', function (d) { return proj([0, 0])[0]; })
-        .attr('cx', function (d) { return proj([0, 0])[1]; })
-        .attr('fill', 'wheat')
-        .attr('r', POINT_RAD);
+function fillMapPoints() {
+    d3.selectAll(ID(ID_MAP) + ' ' + CLS(CLASS_PLANET_POINT))
+        .attr('fill', function(d) {
+            var pt = d3.select(ID(ID_PLANET_CHART) + ' ' + CLS(d[ROWID]));
 
-    /** Set Hover */
-    points.on('click', clickPlanet)
-        .on('mouseover', function (d) {
-            pointHover(d);
-            updateComparison(d);
+            if (pt.empty())
+                return COLOR_UNKNOWN;
+
+            return pt.attr('fill');
         })
-        .on('mouseout', function () {
-            pointClearHover();
-            updateComparison(SELECTED_DATA)
-        });
 }
 
 function pointHover(data) {
@@ -383,15 +387,58 @@ function initChart(planetData) {
         selectY = d3.select(ID(ID_PLANET_CHART_Y));
 
     selectX.on('change', function() {
-        updateChart(selectionFilter(planetData))
+        updateChart(selectionFilter(planetData));
+        updateMap(planetData)
     });
 
     selectY.on('change', function () {
         updateChart(selectionFilter(planetData));
+        updateMap(planetData)
     });
 
     updateChart(selectionFilter(planetData));
+}
 
+
+function updateMap(planetData) {
+
+    var group = d3.selectAll(ID(ID_MAP_PLANETS));
+    var points = group.selectAll('circle')
+        .data(planetData);
+
+    points.exit().remove();
+
+    points = points.enter()
+        .append('circle')
+        .attr('r', POINT_RAD * 0.65)
+        .merge(points)
+        .attr('cx', function (d) {
+            return GALACTIC_PROJECTION([d[STAR_LAT], d[STAR_LONG]])[0];
+        })
+        .attr('cy', function (d) {
+            return GALACTIC_PROJECTION([d[STAR_LAT], d[STAR_LONG]])[1];
+        })
+        .attr('class', function (d) {
+            return CLASS_PLANET_POINT + ' ' + d[ROWID];
+        }, true)
+        .classed(CLASS_SELECTED, function (d) {
+            return d[ROWID] == SELECTED_DATA[ROWID]
+        });
+
+
+    fillMapPoints();
+    effervesceSelected(d3.selectAll(CLS(CLASS_SELECTED)));
+
+    /** Set Hover */
+    points.on('click', clickPlanet)
+        .on('mouseover', function (d) {
+            pointHover(d);
+            updateComparison(d);
+        })
+        .on('mouseout', function () {
+            pointClearHover();
+            updateComparison(SELECTED_DATA)
+        });
 }
 
 function selectionFilter(data) {
@@ -401,11 +448,13 @@ function selectionFilter(data) {
     });
 }
 
+
 function getChartSelections() {
     var selX = d3.select(ID(ID_PLANET_CHART_X)).property('value');
     var selY = d3.select(ID(ID_PLANET_CHART_Y)).property('value');
     return [selX, selY]
 }
+
 
 function updateComparison(planetData) {
     var comparison = d3.select(ID(ID_COMPARISON));
@@ -527,8 +576,8 @@ function updateComparison(planetData) {
 }
 function initAll(planetData) {
     SELECTED_DATA = planetData[2136];
-    initMap(planetData);
     initChart(planetData);
+    initMap(planetData);
     initComparison(SELECTED_DATA);
 }
 
@@ -544,6 +593,9 @@ function initComparison(data) {
         .classed(CLASS_COMPARISON_TEXT, true);
     comparison.append('g')
         .classed(CLASS_COMPARISON_IMAGES, true);
+
+    d3.select('#sun-grad-start')
+        .attr('style', 'stop-color:' + COLOR_SCALE(SUN_TEMP));
 
     updateComparison(data);
 }
@@ -575,7 +627,7 @@ function updateChart ( data ) {
 
     points = points.enter()
       .append('circle')
-        .attr('r', function (d) { return POINT_RAD })
+        .attr('r', POINT_RAD)
       .merge(points)
         .attr('fill', function (d) {
             return getColor(
@@ -639,10 +691,10 @@ function getColor(x, y) {
 function genColorScales() {
     var size = d3.select(ID(ID_PLANET_CHART)).attr('width');
 
-    var targetSize = size/6,
+    var targetSize = size/3.5,
         half = size/2;
     var dom = [0, half-targetSize, half, half+targetSize, size],
-        ran = ['#8E2800', '#FFB03B', '#468966', '#FFB03B', '#8E2800'];
+        ran = [COLOR_OUTER, COLOR_INNER, COLOR_CENTER, COLOR_INNER, COLOR_OUTER];
 
     COLOR_SCALE_X = d3.scaleLinear()
         .domain(dom)
